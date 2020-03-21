@@ -12,9 +12,9 @@ func generateTestZone(autoAddZone bool) string {
 	domain := fmt.Sprintf("test-%s.com", randomString(16))
 
 	if mock.Disabled() && autoAddZone {
-		pdns := initialisePowerDNSTestClient(&mock)
+		p := initialisePowerDNSTestClient(&mock)
 
-		zone, err := pdns.Zones.AddNative(domain, true, "", false, "", "", true, []string{"ns.foo.tld."})
+		zone, err := p.Zones.AddNative(domain, true, "", false, "", "", true, []string{"ns.foo.tld."})
 		if err != nil {
 			fmt.Printf("Error creating %s\n", domain)
 			fmt.Printf("%v\n", err)
