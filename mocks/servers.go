@@ -8,7 +8,8 @@ import (
 	"github.com/joeig/go-powerdns/v2/lib"
 )
 
-func (m *Mock) RegisterServersMockResponder() {
+// RegisterServersMockResponders registers server mock responders
+func (m *Mock) RegisterServersMockResponders() {
 	httpmock.RegisterResponder("GET", m.generateTestAPIURL()+"/servers",
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {
@@ -50,6 +51,7 @@ func (m *Mock) RegisterServersMockResponder() {
 	)
 }
 
+// RegisterCacheFlushMockResponder registers a cache flush mock responder
 func (m *Mock) RegisterCacheFlushMockResponder(testDomain string) {
 	httpmock.RegisterResponder("PUT", fmt.Sprintf("%s/cache/flush", m.generateTestAPIVHostURL()),
 		func(req *http.Request) (*http.Response, error) {

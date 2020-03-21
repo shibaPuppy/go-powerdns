@@ -124,3 +124,18 @@ const (
 	// RRTypeURI represents the URI resource record type
 	RRTypeURI RRType = "URI"
 )
+
+func canonicalResourceRecordValues(records []Record) {
+	for i := range records {
+		records[i].Content = String(MakeDomainCanonical(*records[i].Content))
+	}
+}
+
+// FixRRset fixes a given RRset in order to comply with PowerDNS requirements
+func FixRRset(rrset *RRset) {
+	if *rrset.Type != RRTypeCNAME && *rrset.Type != RRTypeMX {
+		return
+	}
+
+	canonicalResourceRecordValues(rrset.Records)
+}

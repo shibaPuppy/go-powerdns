@@ -70,7 +70,7 @@ func TestNewRequest(t *testing.T) {
 }
 
 func TestDo(t *testing.T) {
-	mock.RegisterDoMockResponder()
+	mock.RegisterDoMockResponders()
 
 	p := initialisePowerDNSTestClient(&mock)
 

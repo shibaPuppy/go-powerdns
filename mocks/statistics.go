@@ -6,6 +6,7 @@ import (
 	"github.com/jarcoal/httpmock"
 )
 
+// RegisterStatisticsMockResponder registers a statistics mock responder
 func (m *Mock) RegisterStatisticsMockResponder() {
 	httpmock.RegisterResponder("GET", m.generateTestAPIVHostURL()+"/statistics",
 		func(req *http.Request) (*http.Response, error) {

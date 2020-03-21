@@ -8,7 +8,8 @@ import (
 	"github.com/joeig/go-powerdns/v2/lib"
 )
 
-func (m *Mock) RegisterDoMockResponder() {
+// RegisterDoMockResponders registers some basic test responders
+func (m *Mock) RegisterDoMockResponders() {
 	httpmock.RegisterResponder("GET", fmt.Sprintf("%s/servers/doesntExist", m.generateTestAPIURL()),
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {

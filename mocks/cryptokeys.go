@@ -8,6 +8,7 @@ import (
 	"github.com/joeig/go-powerdns/v2/lib"
 )
 
+// RegisterCryptokeysMockResponder registers a cryptokeys mock route
 func (m *Mock) RegisterCryptokeysMockResponder(testDomain string) {
 	httpmock.RegisterResponder("GET", m.generateTestAPIVHostURL()+"/zones/"+testDomain+"/cryptokeys",
 		func(req *http.Request) (*http.Response, error) {
@@ -45,7 +46,8 @@ func (m *Mock) RegisterCryptokeysMockResponder(testDomain string) {
 	)
 }
 
-func (m *Mock) RegisterCryptokeyMockResponder(testDomain string, id uint64) {
+// RegisterCryptokeyMockResponders registers cryptokey mock routes
+func (m *Mock) RegisterCryptokeyMockResponders(testDomain string, id uint64) {
 	httpmock.RegisterResponder("GET", m.generateTestAPIVHostURL()+"/zones/"+testDomain+"/cryptokeys/"+lib.CryptokeyIDToString(id),
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {

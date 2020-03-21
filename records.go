@@ -41,24 +41,10 @@ func (r *RecordsService) Delete(domain string, name string, recordType lib.RRTyp
 	return r.patchRRset(domain, *rrset)
 }
 
-func canonicalResourceRecordValues(records []lib.Record) {
-	for i := range records {
-		records[i].Content = lib.String(lib.MakeDomainCanonical(*records[i].Content))
-	}
-}
-
-func fixRRset(rrset *lib.RRset) {
-	if *rrset.Type != lib.RRTypeCNAME && *rrset.Type != lib.RRTypeMX {
-		return
-	}
-
-	canonicalResourceRecordValues(rrset.Records)
-}
-
 func (r *RecordsService) patchRRset(domain string, rrset lib.RRset) error {
 	rrset.Name = lib.String(lib.MakeDomainCanonical(*rrset.Name))
 
-	fixRRset(&rrset)
+	lib.FixRRset(&rrset)
 
 	payload := lib.RRsets{}
 	payload.Sets = append(payload.Sets, rrset)

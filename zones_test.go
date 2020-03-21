@@ -52,7 +52,7 @@ func TestListZonesError(t *testing.T) {
 
 func TestGetZone(t *testing.T) {
 	testDomain := generateTestZone(true)
-	mock.RegisterZoneMockResponder(testDomain, lib.NativeZoneKind)
+	mock.RegisterZoneMockResponders(testDomain, lib.NativeZoneKind)
 	p := initialisePowerDNSTestClient(&mock)
 
 	zone, err := p.Zones.Get(testDomain)
@@ -77,7 +77,7 @@ func TestGetZonesError(t *testing.T) {
 
 func TestAddNativeZone(t *testing.T) {
 	testDomain := generateTestZone(false)
-	mock.RegisterZoneMockResponder(testDomain, lib.NativeZoneKind)
+	mock.RegisterZoneMockResponders(testDomain, lib.NativeZoneKind)
 	p := initialisePowerDNSTestClient(&mock)
 
 	zone, err := p.Zones.AddNative(testDomain, true, "", false, "foo", "foo", true, []string{"ns.foo.tld."})
@@ -102,7 +102,7 @@ func TestAddNativeZoneError(t *testing.T) {
 
 func TestAddMasterZone(t *testing.T) {
 	testDomain := generateTestZone(false)
-	mock.RegisterZoneMockResponder(testDomain, lib.MasterZoneKind)
+	mock.RegisterZoneMockResponders(testDomain, lib.MasterZoneKind)
 	p := initialisePowerDNSTestClient(&mock)
 
 	zone, err := p.Zones.AddMaster(testDomain, true, "", false, "foo", "foo", true, []string{"ns.foo.tld."})
@@ -127,7 +127,7 @@ func TestAddMasterZoneError(t *testing.T) {
 
 func TestAddSlaveZone(t *testing.T) {
 	testDomain := generateTestZone(false)
-	mock.RegisterZoneMockResponder(testDomain, lib.SlaveZoneKind)
+	mock.RegisterZoneMockResponders(testDomain, lib.SlaveZoneKind)
 	p := initialisePowerDNSTestClient(&mock)
 
 	zone, err := p.Zones.AddSlave(testDomain, []string{"127.0.0.1"})
@@ -153,7 +153,7 @@ func TestAddSlaveZoneError(t *testing.T) {
 func TestChangeZone(t *testing.T) {
 	testDomain := generateTestZone(true)
 
-	mock.RegisterZoneMockResponder(testDomain, lib.NativeZoneKind)
+	mock.RegisterZoneMockResponders(testDomain, lib.NativeZoneKind)
 
 	p := initialisePowerDNSTestClient(&mock)
 
@@ -181,7 +181,7 @@ func TestChangeZoneError(t *testing.T) {
 
 func TestDeleteZone(t *testing.T) {
 	testDomain := generateTestZone(true)
-	mock.RegisterZoneMockResponder(testDomain, lib.NativeZoneKind)
+	mock.RegisterZoneMockResponders(testDomain, lib.NativeZoneKind)
 	p := initialisePowerDNSTestClient(&mock)
 
 	if err := p.Zones.Delete(testDomain); err != nil {
@@ -201,7 +201,7 @@ func TestDeleteZoneError(t *testing.T) {
 
 func TestNotify(t *testing.T) {
 	testDomain := generateTestZone(true)
-	mock.RegisterZoneMockResponder(testDomain, lib.MasterZoneKind)
+	mock.RegisterZoneMockResponders(testDomain, lib.MasterZoneKind)
 	p := initialisePowerDNSTestClient(&mock)
 
 	notifyResult, err := p.Zones.Notify(testDomain)
@@ -226,7 +226,7 @@ func TestNotifyError(t *testing.T) {
 
 func TestExport(t *testing.T) {
 	testDomain := generateTestZone(true)
-	mock.RegisterZoneMockResponder(testDomain, lib.NativeZoneKind)
+	mock.RegisterZoneMockResponders(testDomain, lib.NativeZoneKind)
 	p := initialisePowerDNSTestClient(&mock)
 
 	export, err := p.Zones.Export(testDomain)

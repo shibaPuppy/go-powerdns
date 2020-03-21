@@ -15,6 +15,7 @@ type Cryptokey struct {
 	Bits       *uint64  `json:"bits,omitempty"`
 }
 
+// CryptokeyIDToString converts a given cryptokey ID to string
 func CryptokeyIDToString(id uint64) string {
 	return strconv.FormatUint(id, 10)
 }

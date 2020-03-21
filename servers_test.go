@@ -5,7 +5,7 @@ import (
 )
 
 func TestListServers(t *testing.T) {
-	mock.RegisterServersMockResponder()
+	mock.RegisterServersMockResponders()
 
 	p := initialisePowerDNSTestClient(&mock)
 
@@ -29,7 +29,7 @@ func TestListServersError(t *testing.T) {
 }
 
 func TestGetServer(t *testing.T) {
-	mock.RegisterServersMockResponder()
+	mock.RegisterServersMockResponders()
 	p := initialisePowerDNSTestClient(&mock)
 
 	server, err := p.Servers.Get(mock.TestVHost)

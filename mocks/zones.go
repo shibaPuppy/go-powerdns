@@ -27,6 +27,7 @@ func validateZoneKind(zoneKind lib.ZoneKind) error {
 	return nil
 }
 
+// RegisterZonesMockResponder registers a zones mock responder
 func (m *Mock) RegisterZonesMockResponder() {
 	httpmock.RegisterResponder("GET", m.generateTestAPIVHostURL()+"/zones",
 		func(req *http.Request) (*http.Response, error) {
@@ -55,7 +56,8 @@ func (m *Mock) RegisterZonesMockResponder() {
 	)
 }
 
-func (m *Mock) RegisterZoneMockResponder(testDomain string, zoneKind lib.ZoneKind) {
+// RegisterZoneMockResponders registers zone mock responders
+func (m *Mock) RegisterZoneMockResponders(testDomain string, zoneKind lib.ZoneKind) {
 	httpmock.RegisterResponder("GET", m.generateTestAPIVHostURL()+"/zones/"+testDomain,
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {

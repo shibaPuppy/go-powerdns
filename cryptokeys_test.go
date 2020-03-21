@@ -43,7 +43,7 @@ func TestGetCryptokey(t *testing.T) {
 
 	id := cryptokeys[0].ID
 
-	mock.RegisterCryptokeyMockResponder(testDomain, *id)
+	mock.RegisterCryptokeyMockResponders(testDomain, *id)
 
 	cryptokey, err := p.Cryptokeys.Get(testDomain, *id)
 	if err != nil {
@@ -77,7 +77,7 @@ func TestDeleteCryptokey(t *testing.T) {
 	}
 
 	id := cryptokeys[0].ID
-	mock.RegisterCryptokeyMockResponder(testDomain, *id)
+	mock.RegisterCryptokeyMockResponders(testDomain, *id)
 
 	if p.Cryptokeys.Delete(testDomain, *id) != nil {
 		t.Errorf("%s", err)

@@ -37,6 +37,7 @@ func validateCNAMEContent(content string) error {
 	return nil
 }
 
+// RegisterRecordMockResponder registers a record mock responder
 func (m *Mock) RegisterRecordMockResponder(testDomain string) {
 	httpmock.RegisterResponder("PATCH", m.generateTestAPIVHostURL()+"/zones/"+testDomain,
 		func(req *http.Request) (*http.Response, error) {

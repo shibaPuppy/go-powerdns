@@ -7,6 +7,7 @@ import (
 	"github.com/joeig/go-powerdns/v2/lib"
 )
 
+// RegisterConfigsMockResponder registers a config mock route
 func (m *Mock) RegisterConfigsMockResponder() {
 	httpmock.RegisterResponder("GET", m.generateTestAPIVHostURL()+"/config",
 		func(req *http.Request) (*http.Response, error) {
