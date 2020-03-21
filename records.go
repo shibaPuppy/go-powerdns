@@ -2,6 +2,7 @@ package powerdns
 
 import (
 	"fmt"
+
 	"github.com/joeig/go-powerdns/v2/types"
 )
 
@@ -50,6 +51,7 @@ func fixRRset(rrset *types.RRset) {
 	if *rrset.Type != types.RRTypeCNAME && *rrset.Type != types.RRTypeMX {
 		return
 	}
+
 	canonicalResourceRecordValues(rrset.Records)
 }
 
@@ -67,5 +69,6 @@ func (r *RecordsService) patchRRset(domain string, rrset types.RRset) error {
 	}
 
 	_, err = r.client.do(req, nil)
+
 	return err
 }

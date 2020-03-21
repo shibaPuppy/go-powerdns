@@ -2,8 +2,9 @@ package powerdns
 
 import (
 	"fmt"
-	"github.com/joeig/go-powerdns/v2/types"
 	"io/ioutil"
+
+	"github.com/joeig/go-powerdns/v2/types"
 )
 
 // ZonesService handles communication with the zones related methods of the Client API
@@ -18,6 +19,7 @@ func (z *ZonesService) List() ([]types.Zone, error) {
 
 	zones := make([]types.Zone, 0)
 	_, err = z.client.do(req, &zones)
+
 	return zones, err
 }
 
@@ -30,11 +32,12 @@ func (z *ZonesService) Get(domain string) (*types.Zone, error) {
 
 	zone := &types.Zone{}
 	_, err = z.client.do(req, &zone)
+
 	return zone, err
 }
 
 // AddNative creates a new native zone
-func (z *ZonesService) AddNative(domain string, dnssec bool, nsec3Param string, nsec3Narrow bool, soaEdit, soaEditApi string, apiRectify bool, nameservers []string) (*types.Zone, error) {
+func (z *ZonesService) AddNative(domain string, dnssec bool, nsec3Param string, nsec3Narrow bool, soaEdit, soaEditAPI string, apiRectify bool, nameservers []string) (*types.Zone, error) {
 	zone := types.Zone{
 		Name:        types.String(domain),
 		Kind:        types.ZoneKindPtr(types.NativeZoneKind),
@@ -42,15 +45,16 @@ func (z *ZonesService) AddNative(domain string, dnssec bool, nsec3Param string, 
 		Nsec3Param:  types.String(nsec3Param),
 		Nsec3Narrow: types.Bool(nsec3Narrow),
 		SOAEdit:     types.String(soaEdit),
-		SOAEditAPI:  types.String(soaEditApi),
+		SOAEditAPI:  types.String(soaEditAPI),
 		APIRectify:  types.Bool(apiRectify),
 		Nameservers: nameservers,
 	}
+
 	return z.postZone(&zone)
 }
 
 // AddMaster creates a new master zone
-func (z *ZonesService) AddMaster(domain string, dnssec bool, nsec3Param string, nsec3Narrow bool, soaEdit, soaEditApi string, apiRectify bool, nameservers []string) (*types.Zone, error) {
+func (z *ZonesService) AddMaster(domain string, dnssec bool, nsec3Param string, nsec3Narrow bool, soaEdit, soaEditAPI string, apiRectify bool, nameservers []string) (*types.Zone, error) {
 	zone := types.Zone{
 		Name:        types.String(domain),
 		Kind:        types.ZoneKindPtr(types.MasterZoneKind),
@@ -58,10 +62,11 @@ func (z *ZonesService) AddMaster(domain string, dnssec bool, nsec3Param string, 
 		Nsec3Param:  types.String(nsec3Param),
 		Nsec3Narrow: types.Bool(nsec3Narrow),
 		SOAEdit:     types.String(soaEdit),
-		SOAEditAPI:  types.String(soaEditApi),
+		SOAEditAPI:  types.String(soaEditAPI),
 		APIRectify:  types.Bool(apiRectify),
 		Nameservers: nameservers,
 	}
+
 	return z.postZone(&zone)
 }
 
@@ -72,6 +77,7 @@ func (z *ZonesService) AddSlave(domain string, masters []string) (*types.Zone, e
 		Kind:    types.ZoneKindPtr(types.SlaveZoneKind),
 		Masters: masters,
 	}
+
 	return z.postZone(&zone)
 }
 
@@ -86,6 +92,7 @@ func (z *ZonesService) postZone(zone *types.Zone) (*types.Zone, error) {
 
 	createdZone := new(types.Zone)
 	_, err = z.client.do(req, &createdZone)
+
 	return createdZone, err
 }
 
@@ -102,6 +109,7 @@ func (z *ZonesService) Change(domain string, zone *types.Zone) error {
 	}
 
 	_, err = z.client.do(req, nil)
+
 	return err
 }
 
@@ -113,6 +121,7 @@ func (z *ZonesService) Delete(domain string) error {
 	}
 
 	_, err = z.client.do(req, nil)
+
 	return err
 }
 
@@ -125,6 +134,7 @@ func (z *ZonesService) Notify(domain string) (*types.NotifyResult, error) {
 
 	notifyResult := &types.NotifyResult{}
 	_, err = z.client.do(req, notifyResult)
+
 	return notifyResult, err
 }
 
@@ -141,5 +151,6 @@ func (z *ZonesService) Export(domain string) (types.Export, error) {
 	}
 
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+
 	return types.Export(bodyBytes), nil
 }

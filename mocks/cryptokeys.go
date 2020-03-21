@@ -2,9 +2,10 @@ package mocks
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/jarcoal/httpmock"
 	"github.com/joeig/go-powerdns/v2/types"
-	"net/http"
 )
 
 func (m *Mock) RegisterCryptokeysMockResponder(testDomain string) {

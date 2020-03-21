@@ -2,6 +2,7 @@ package powerdns
 
 import (
 	"fmt"
+
 	"github.com/joeig/go-powerdns/v2/types"
 )
 
@@ -17,6 +18,7 @@ func (c *CryptokeysService) List(domain string) ([]types.Cryptokey, error) {
 
 	cryptokeys := make([]types.Cryptokey, 0)
 	_, err = c.client.do(req, &cryptokeys)
+
 	return cryptokeys, err
 }
 
@@ -29,6 +31,7 @@ func (c *CryptokeysService) Get(domain string, id uint64) (*types.Cryptokey, err
 
 	cryptokey := new(types.Cryptokey)
 	_, err = c.client.do(req, &cryptokey)
+
 	return cryptokey, err
 }
 
@@ -40,5 +43,6 @@ func (c *CryptokeysService) Delete(domain string, id uint64) error {
 	}
 
 	_, err = c.client.do(req, nil)
+
 	return err
 }

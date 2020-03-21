@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/joeig/go-powerdns/v2/types"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/joeig/go-powerdns/v2/types"
 )
 
 type service struct {
@@ -76,9 +77,12 @@ func parseBaseURL(baseURL string) (string, string, string, error) {
 	if err != nil {
 		return "", "", "", err
 	}
+
 	hp := strings.Split(u.Host, ":")
 	hostname := hp[0]
+
 	var port string
+
 	if len(hp) > 1 {
 		port = hp[1]
 	} else {
@@ -96,6 +100,7 @@ func parseVHost(vHost string) string {
 	if vHost == "" {
 		return "localhost"
 	}
+
 	return vHost
 }
 
@@ -120,6 +125,7 @@ func (p *Client) newRequest(method string, path string, query *url.Values, body 
 	}
 
 	apiURL := generateAPIURL(p.Scheme, p.Hostname, p.Port, path, query)
+
 	req, err := http.NewRequest(method, apiURL.String(), buf)
 	if err != nil {
 		return nil, err
@@ -158,6 +164,7 @@ func (p *Client) do(req *http.Request, v interface{}) (*http.Response, error) {
 		}()
 
 		apiError := new(types.Error)
+
 		err = json.NewDecoder(resp.Body).Decode(apiError)
 		if err != nil {
 			return resp, err

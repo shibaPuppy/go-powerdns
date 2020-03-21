@@ -2,8 +2,9 @@ package powerdns
 
 import (
 	"fmt"
-	"github.com/joeig/go-powerdns/v2/types"
 	"net/url"
+
+	"github.com/joeig/go-powerdns/v2/types"
 )
 
 // StatisticsService handles communication with the statistics related methods of the Client API
@@ -26,6 +27,7 @@ func (s *StatisticsService) List() ([]types.Statistic, error) {
 func (s *StatisticsService) Get(statisticName string) ([]types.Statistic, error) {
 	query := url.Values{}
 	query.Add("statistic", statisticName)
+
 	req, err := s.client.newRequest("GET", fmt.Sprintf("servers/%s/statistics", s.client.VHost), &query, nil)
 	if err != nil {
 		return nil, err

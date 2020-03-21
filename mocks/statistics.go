@@ -1,8 +1,9 @@
 package mocks
 
 import (
-	"github.com/jarcoal/httpmock"
 	"net/http"
+
+	"github.com/jarcoal/httpmock"
 )
 
 func (m *Mock) RegisterStatisticsMockResponder() {

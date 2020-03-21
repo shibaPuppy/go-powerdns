@@ -2,12 +2,13 @@ package powerdns
 
 import (
 	"fmt"
-	"github.com/joeig/go-powerdns/v2/mocks"
-	"github.com/joeig/go-powerdns/v2/types"
 	"net/http"
 	"net/url"
 	"os"
 	"testing"
+
+	"github.com/joeig/go-powerdns/v2/mocks"
+	"github.com/joeig/go-powerdns/v2/types"
 )
 
 var mock mocks.Mock
@@ -75,26 +76,42 @@ func TestDo(t *testing.T) {
 
 	t.Run("TestStringErrorResponse", func(t *testing.T) {
 		req, _ := p.newRequest("GET", "servers/doesntExist", nil, nil)
-		if _, err := p.do(req, nil); err == nil {
+		if resp, err := p.do(req, nil); err == nil {
+			defer func() {
+				_ = resp.Body.Close()
+			}()
+
 			t.Error("err is nil")
 		}
 	})
 	t.Run("Test401Handling", func(t *testing.T) {
 		p.Headers = nil
 		req, _ := p.newRequest("GET", "servers", nil, nil)
-		if _, err := p.do(req, nil); err == nil {
+		if resp, err := p.do(req, nil); err == nil {
+			defer func() {
+				_ = resp.Body.Close()
+			}()
+
 			t.Error("401 response does not result into an error")
 		}
 	})
 	t.Run("Test404Handling", func(t *testing.T) {
 		req, _ := p.newRequest("GET", "servers/doesntExist", nil, nil)
-		if _, err := p.do(req, nil); err == nil {
+		if resp, err := p.do(req, nil); err == nil {
+			defer func() {
+				_ = resp.Body.Close()
+			}()
+
 			t.Error("404 response does not result into an error")
 		}
 	})
 	t.Run("TestJSONResponseHandling", func(t *testing.T) {
 		req, _ := p.newRequest("GET", "server", nil, &types.Server{})
-		if _, err := p.do(req, nil); err.(*types.Error).Message != "Not Found" {
+		if resp, err := p.do(req, nil); err.(*types.Error).Message != "Not Found" {
+			defer func() {
+				_ = resp.Body.Close()
+			}()
+
 			t.Error("501 JSON response does not result into Error structure")
 		}
 	})
@@ -116,6 +133,8 @@ func TestParseBaseURL(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
+		tc := tc
+
 		t.Run(fmt.Sprintf("TestCase%d", i), func(t *testing.T) {
 			scheme, hostname, port, err := parseBaseURL(tc.baseURL)
 
@@ -151,6 +170,8 @@ func TestParseVHost(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
+		tc := tc
+
 		t.Run(fmt.Sprintf("TestCase%d", i), func(t *testing.T) {
 			if parseVHost(tc.vHost) != tc.wantVHost {
 				t.Error("parseVHost returned an invalid value")
@@ -164,6 +185,7 @@ func TestGenerateAPIURL(t *testing.T) {
 	query := url.Values{}
 	query.Add("a", "b")
 	g := generateAPIURL("https", "localhost", "8080", "foo", &query)
+
 	if tmpl != g.String() {
 		t.Errorf("Template does not match generated API URL: %s", g.String())
 	}

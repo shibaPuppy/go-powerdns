@@ -24,6 +24,7 @@ func TestListCryptokeysError(t *testing.T) {
 	testDomain := generateTestZone(false)
 	p := initialisePowerDNSTestClient(&mock)
 	p.Port = "x"
+
 	if _, err := p.Cryptokeys.List(testDomain); err == nil {
 		t.Error("error is nil")
 	}
@@ -31,10 +32,10 @@ func TestListCryptokeysError(t *testing.T) {
 
 func TestGetCryptokey(t *testing.T) {
 	testDomain := generateTestZone(true)
-
 	p := initialisePowerDNSTestClient(&mock)
 
 	mock.RegisterCryptokeysMockResponder(testDomain)
+
 	cryptokeys, err := p.Cryptokeys.List(testDomain)
 	if err != nil {
 		t.Errorf("%s", err)
@@ -43,6 +44,7 @@ func TestGetCryptokey(t *testing.T) {
 	id := cryptokeys[0].ID
 
 	mock.RegisterCryptokeyMockResponder(testDomain, *id)
+
 	cryptokey, err := p.Cryptokeys.Get(testDomain, *id)
 	if err != nil {
 		t.Errorf("%s", err)
@@ -57,6 +59,7 @@ func TestGetCryptokeyError(t *testing.T) {
 	testDomain := generateTestZone(false)
 	p := initialisePowerDNSTestClient(&mock)
 	p.Port = "x"
+
 	if _, err := p.Cryptokeys.Get(testDomain, uint64(0)); err == nil {
 		t.Error("error is nil")
 	}
@@ -64,10 +67,10 @@ func TestGetCryptokeyError(t *testing.T) {
 
 func TestDeleteCryptokey(t *testing.T) {
 	testDomain := generateTestZone(true)
-
 	p := initialisePowerDNSTestClient(&mock)
 
 	mock.RegisterCryptokeysMockResponder(testDomain)
+
 	cryptokeys, err := p.Cryptokeys.List(testDomain)
 	if err != nil {
 		t.Errorf("%s", err)
@@ -75,6 +78,7 @@ func TestDeleteCryptokey(t *testing.T) {
 
 	id := cryptokeys[0].ID
 	mock.RegisterCryptokeyMockResponder(testDomain, *id)
+
 	if p.Cryptokeys.Delete(testDomain, *id) != nil {
 		t.Errorf("%s", err)
 	}
@@ -84,6 +88,7 @@ func TestDeleteCryptokeyError(t *testing.T) {
 	testDomain := generateTestZone(false)
 	p := initialisePowerDNSTestClient(&mock)
 	p.Port = "x"
+
 	if err := p.Cryptokeys.Delete(testDomain, uint64(0)); err == nil {
 		t.Error("error is nil")
 	}

@@ -1,16 +1,32 @@
 package powerdns
 
 import (
+	"crypto/rand"
 	"fmt"
-	"github.com/joeig/go-powerdns/v2/types"
-	"math/rand"
 	"testing"
-	"time"
+
+	"github.com/joeig/go-powerdns/v2/types"
 )
 
+func randomString(length int) string {
+	bytes := make([]byte, length)
+
+	if _, err := rand.Read(bytes); err != nil {
+		panic(err)
+	}
+
+	characters := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+	for i, b := range bytes {
+		character := b % byte(len(characters))
+		bytes[i] = character
+	}
+
+	return characters
+}
+
 func generateTestRecord(client *Client, domain string, autoAddRecord bool) string {
-	rand.Seed(time.Now().UnixNano())
-	name := fmt.Sprintf("test-%d.%s", rand.Int(), domain)
+	name := fmt.Sprintf("test-%s.%s", randomString(16), domain)
 
 	if mock.Disabled() && autoAddRecord {
 		if err := client.Records.Add(domain, name, types.RRTypeTXT, 300, []string{"\"Testing...\""}); err != nil {
@@ -26,13 +42,15 @@ func generateTestRecord(client *Client, domain string, autoAddRecord bool) strin
 
 func TestAddRecord(t *testing.T) {
 	testDomain := generateTestZone(true)
-
 	p := initialisePowerDNSTestClient(&mock)
+
 	mock.RegisterRecordMockResponder(testDomain)
+
 	testRecordNameTXT := generateTestRecord(p, testDomain, false)
 	if err := p.Records.Add(testDomain, testRecordNameTXT, types.RRTypeTXT, 300, []string{"\"bar\""}); err != nil {
 		t.Errorf("%s", err)
 	}
+
 	testRecordNameCNAME := generateTestRecord(p, testDomain, false)
 	if err := p.Records.Add(testDomain, testRecordNameCNAME, types.RRTypeCNAME, 300, []string{"foo.tld"}); err != nil {
 		t.Errorf("%s", err)
@@ -43,6 +61,7 @@ func TestAddRecordError(t *testing.T) {
 	p := initialisePowerDNSTestClient(&mock)
 	p.Port = "x"
 	testDomain := generateTestZone(false)
+
 	testRecordName := generateTestRecord(p, testDomain, false)
 	if err := p.Records.Add(testDomain, testRecordName, types.RRTypeTXT, 300, []string{"\"bar\""}); err == nil {
 		t.Error("error is nil")
@@ -53,8 +72,9 @@ func TestChangeRecord(t *testing.T) {
 	testDomain := generateTestZone(true)
 
 	p := initialisePowerDNSTestClient(&mock)
-	testRecordName := generateTestRecord(p, testDomain, true)
 	mock.RegisterRecordMockResponder(testDomain)
+
+	testRecordName := generateTestRecord(p, testDomain, true)
 	if err := p.Records.Change(testDomain, testRecordName, types.RRTypeTXT, 300, []string{"\"bar\""}); err != nil {
 		t.Errorf("%s", err)
 	}
@@ -64,6 +84,7 @@ func TestChangeRecordError(t *testing.T) {
 	p := initialisePowerDNSTestClient(&mock)
 	p.Port = "x"
 	testDomain := generateTestZone(false)
+
 	testRecordName := generateTestRecord(p, testDomain, false)
 	if err := p.Records.Change(testDomain, testRecordName, types.RRTypeTXT, 300, []string{"\"bar\""}); err == nil {
 		t.Error("error is nil")
@@ -72,10 +93,10 @@ func TestChangeRecordError(t *testing.T) {
 
 func TestDeleteRecord(t *testing.T) {
 	testDomain := generateTestZone(true)
-
 	p := initialisePowerDNSTestClient(&mock)
-	testRecordName := generateTestRecord(p, testDomain, true)
 	mock.RegisterRecordMockResponder(testDomain)
+
+	testRecordName := generateTestRecord(p, testDomain, true)
 	if err := p.Records.Delete(testDomain, testRecordName, types.RRTypeTXT); err != nil {
 		t.Errorf("%s", err)
 	}
@@ -85,6 +106,7 @@ func TestDeleteRecordError(t *testing.T) {
 	p := initialisePowerDNSTestClient(&mock)
 	p.Port = "x"
 	testDomain := generateTestZone(false)
+
 	testRecordName := generateTestRecord(p, testDomain, false)
 	if err := p.Records.Delete(testDomain, testRecordName, types.RRTypeTXT); err == nil {
 		t.Error("error is nil")
@@ -102,12 +124,15 @@ func TestCanonicalResourceRecordValues(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
+		tc := tc
+
 		t.Run(fmt.Sprintf("TestCase%d", i), func(t *testing.T) {
 			canonicalResourceRecordValues(tc.records)
 
 			for j := range tc.records {
 				isContent := *tc.records[j].Content
 				wantContent := tc.wantContent[j]
+
 				if isContent != wantContent {
 					t.Errorf("Comparison failed: %s != %s", isContent, wantContent)
 				}
@@ -127,6 +152,8 @@ func TestFixRRset(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
+		tc := tc
+
 		t.Run(fmt.Sprintf("TestCase%d", i), func(t *testing.T) {
 			fixRRset(&tc.rrset)
 
@@ -134,6 +161,7 @@ func TestFixRRset(t *testing.T) {
 				for j := range tc.rrset.Records {
 					isContent := *tc.rrset.Records[j].Content
 					wantContent := types.MakeDomainCanonical(*tc.rrset.Records[j].Content)
+
 					if isContent != wantContent {
 						t.Errorf("Comparison failed: %s != %s", isContent, wantContent)
 					}
@@ -142,6 +170,7 @@ func TestFixRRset(t *testing.T) {
 				for j := range tc.rrset.Records {
 					isContent := *tc.rrset.Records[j].Content
 					wrongContent := types.MakeDomainCanonical(*tc.rrset.Records[j].Content)
+
 					if isContent == wrongContent {
 						t.Errorf("Comparison failed: %s == %s", isContent, wrongContent)
 					}

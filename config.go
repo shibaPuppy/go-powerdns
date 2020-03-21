@@ -2,6 +2,7 @@ package powerdns
 
 import (
 	"fmt"
+
 	"github.com/joeig/go-powerdns/v2/types"
 )
 
@@ -17,5 +18,6 @@ func (c *ConfigService) List() ([]types.ConfigSetting, error) {
 
 	config := make([]types.ConfigSetting, 0)
 	_, err = c.client.do(req, &config)
+
 	return config, err
 }

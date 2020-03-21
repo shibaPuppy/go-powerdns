@@ -2,27 +2,30 @@ package mocks
 
 import (
 	"encoding/json"
-	"github.com/jarcoal/httpmock"
-	"github.com/joeig/go-powerdns/v2/types"
 	"log"
 	"net/http"
 	"regexp"
 	"strings"
+
+	"github.com/jarcoal/httpmock"
+	"github.com/joeig/go-powerdns/v2/types"
 )
 
 func validateChangeType(changeType types.ChangeType) error {
 	matched, err := regexp.MatchString(`^(REPLACE|DELETE)$`, string(changeType))
-	if matched == false || err != nil {
+	if !matched || err != nil {
 		return &types.Error{}
 	}
+
 	return nil
 }
 
 func validateRRType(rrType types.RRType) error {
 	matched, err := regexp.MatchString(`^(A|AAAA|AFSDB|ALIAS|CAA|CERT|CDNSKEY|CDS|CNAME|DNSKEY|DNAME|DS|HINFO|KEY|LOC|MX|NAPTR|NS|NSEC|NSEC3|NSEC3PARAM|OPENPGPKEY|PTR|RP|RRSIG|SOA|SPF|SSHFP|SRV|TKEY|TSIG|TLSA|SMIMEA|TXT|URI)$`, string(rrType))
-	if matched == false || err != nil {
+	if !matched || err != nil {
 		return &types.Error{}
 	}
+
 	return nil
 }
 
@@ -30,6 +33,7 @@ func validateCNAMEContent(content string) error {
 	if !strings.HasSuffix(content, ".") {
 		return &types.Error{}
 	}
+
 	return nil
 }
 

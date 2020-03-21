@@ -2,25 +2,28 @@ package mocks
 
 import (
 	"encoding/json"
-	"github.com/jarcoal/httpmock"
-	"github.com/joeig/go-powerdns/v2/types"
 	"log"
 	"net/http"
 	"regexp"
+
+	"github.com/jarcoal/httpmock"
+	"github.com/joeig/go-powerdns/v2/types"
 )
 
 func validateZoneType(zoneType types.ZoneType) error {
 	if zoneType != "Zone" {
 		return &types.Error{}
 	}
+
 	return nil
 }
 
 func validateZoneKind(zoneKind types.ZoneKind) error {
 	matched, err := regexp.MatchString(`^(Native|Master|Slave)$`, string(zoneKind))
-	if matched == false || err != nil {
+	if !matched || err != nil {
 		return &types.Error{}
 	}
+
 	return nil
 }
 
@@ -116,7 +119,8 @@ func (m *Mock) RegisterZoneMockResponder(testDomain string, zoneKind types.ZoneK
 			}
 
 			var zoneMock types.Zone
-			if zoneKind == types.NativeZoneKind || zoneKind == types.MasterZoneKind {
+			switch zoneKind {
+			case types.NativeZoneKind, types.MasterZoneKind:
 				zoneMock = types.Zone{
 					ID:   types.String(types.MakeDomainCanonical(testDomain)),
 					Name: types.String(types.MakeDomainCanonical(testDomain)),
@@ -157,7 +161,7 @@ func (m *Mock) RegisterZoneMockResponder(testDomain string, zoneKind types.ZoneK
 					APIRectify:  types.Bool(true),
 					Account:     types.String(""),
 				}
-			} else if zoneKind == types.SlaveZoneKind {
+			case types.SlaveZoneKind:
 				zoneMock = types.Zone{
 					ID:          types.String(types.MakeDomainCanonical(testDomain)),
 					Name:        types.String(types.MakeDomainCanonical(testDomain)),
@@ -174,7 +178,7 @@ func (m *Mock) RegisterZoneMockResponder(testDomain string, zoneKind types.ZoneK
 					APIRectify:  types.Bool(true),
 					Account:     types.String(""),
 				}
-			} else {
+			default:
 				return httpmock.NewStringResponse(http.StatusUnprocessableEntity, "Unprocessable Entity"), nil
 			}
 

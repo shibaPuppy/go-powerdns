@@ -2,8 +2,9 @@ package powerdns
 
 import (
 	"fmt"
-	"github.com/joeig/go-powerdns/v2/types"
 	"net/url"
+
+	"github.com/joeig/go-powerdns/v2/types"
 )
 
 // ServersService handles communication with the servers related methods of the Client API
@@ -18,6 +19,7 @@ func (s *ServersService) List() ([]types.Server, error) {
 
 	servers := make([]types.Server, 0)
 	_, err = s.client.do(req, &servers)
+
 	return servers, err
 }
 
@@ -30,6 +32,7 @@ func (s *ServersService) Get(vHost string) (*types.Server, error) {
 
 	server := &types.Server{}
 	_, err = s.client.do(req, &server)
+
 	return server, err
 }
 
@@ -37,6 +40,7 @@ func (s *ServersService) Get(vHost string) (*types.Server, error) {
 func (s *ServersService) CacheFlush(vHost string, domain string) (*types.CacheFlushResult, error) {
 	query := url.Values{}
 	query.Add("domain", types.MakeDomainCanonical(domain))
+
 	req, err := s.client.newRequest("PUT", fmt.Sprintf("servers/%s/cache/flush", vHost), &query, nil)
 	if err != nil {
 		return nil, err
@@ -44,5 +48,6 @@ func (s *ServersService) CacheFlush(vHost string, domain string) (*types.CacheFl
 
 	cacheFlushResult := &types.CacheFlushResult{}
 	_, err = s.client.do(req, &cacheFlushResult)
+
 	return cacheFlushResult, err
 }

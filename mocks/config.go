@@ -1,9 +1,10 @@
 package mocks
 
 import (
+	"net/http"
+
 	"github.com/jarcoal/httpmock"
 	"github.com/joeig/go-powerdns/v2/types"
-	"net/http"
 )
 
 func (m *Mock) RegisterConfigsMockResponder() {

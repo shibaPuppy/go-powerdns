@@ -10,6 +10,7 @@ func BoolValue(v *bool) bool {
 	if v != nil {
 		return *v
 	}
+
 	return false
 }
 
@@ -23,6 +24,7 @@ func Uint32Value(v *uint32) uint32 {
 	if v != nil {
 		return *v
 	}
+
 	return 0
 }
 
@@ -36,6 +38,7 @@ func Uint64Value(v *uint64) uint64 {
 	if v != nil {
 		return *v
 	}
+
 	return 0
 }
 
@@ -49,5 +52,6 @@ func StringValue(v *string) string {
 	if v != nil {
 		return *v
 	}
+
 	return ""
 }
