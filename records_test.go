@@ -1,14 +1,9 @@
 package powerdns
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/jarcoal/httpmock"
-	"log"
+	"github.com/joeig/go-powerdns/v2/types"
 	"math/rand"
-	"net/http"
-	"regexp"
-	"strings"
 	"testing"
 	"time"
 )
@@ -17,8 +12,8 @@ func generateTestRecord(client *Client, domain string, autoAddRecord bool) strin
 	rand.Seed(time.Now().UnixNano())
 	name := fmt.Sprintf("test-%d.%s", rand.Int(), domain)
 
-	if httpmock.Disabled() && autoAddRecord {
-		if err := client.Records.Add(domain, name, RRTypeTXT, 300, []string{"\"Testing...\""}); err != nil {
+	if mock.Disabled() && autoAddRecord {
+		if err := client.Records.Add(domain, name, types.RRTypeTXT, 300, []string{"\"Testing...\""}); err != nil {
 			fmt.Printf("Error creating record: %s\n", name)
 			fmt.Printf("%s\n", err)
 		} else {
@@ -29,101 +24,27 @@ func generateTestRecord(client *Client, domain string, autoAddRecord bool) strin
 	return name
 }
 
-func validateChangeType(changeType ChangeType) error {
-	matched, err := regexp.MatchString(`^(REPLACE|DELETE)$`, string(changeType))
-	if matched == false || err != nil {
-		return &Error{}
-	}
-	return nil
-}
-
-func validateRRType(rrType RRType) error {
-	matched, err := regexp.MatchString(`^(A|AAAA|AFSDB|ALIAS|CAA|CERT|CDNSKEY|CDS|CNAME|DNSKEY|DNAME|DS|HINFO|KEY|LOC|MX|NAPTR|NS|NSEC|NSEC3|NSEC3PARAM|OPENPGPKEY|PTR|RP|RRSIG|SOA|SPF|SSHFP|SRV|TKEY|TSIG|TLSA|SMIMEA|TXT|URI)$`, string(rrType))
-	if matched == false || err != nil {
-		return &Error{}
-	}
-	return nil
-}
-
-func validateCNAMEContent(content string) error {
-	if !strings.HasSuffix(content, ".") {
-		return &Error{}
-	}
-	return nil
-}
-
-func registerRecordMockResponder(testDomain string) {
-	httpmock.RegisterResponder("PATCH", generateTestAPIVHostURL()+"/zones/"+testDomain,
-		func(req *http.Request) (*http.Response, error) {
-			if res := verifyAPIKey(req); res != nil {
-				return res, nil
-			}
-
-			if req.Body == nil {
-				log.Print("Request body is nil")
-				return httpmock.NewBytesResponse(http.StatusBadRequest, []byte{}), nil
-			}
-
-			var rrsets RRsets
-			if json.NewDecoder(req.Body).Decode(&rrsets) != nil {
-				log.Print("Cannot decode request body")
-				return httpmock.NewBytesResponse(http.StatusBadRequest, []byte{}), nil
-			}
-
-			for _, set := range rrsets.Sets {
-				if validateChangeType(*set.ChangeType) != nil {
-					log.Print("Invalid change type", *set.ChangeType)
-					return httpmock.NewBytesResponse(http.StatusBadRequest, []byte{}), nil
-				}
-
-				if validateRRType(*set.Type) != nil {
-					log.Print("Invalid record type", *set.Type)
-					return httpmock.NewBytesResponse(http.StatusBadRequest, []byte{}), nil
-				}
-
-				if *set.Type == RRTypeCNAME || *set.Type == RRTypeMX {
-					for _, record := range set.Records {
-						if validateCNAMEContent(*record.Content) != nil {
-							log.Print("CNAME content validation failed")
-							return httpmock.NewBytesResponse(http.StatusBadRequest, []byte{}), nil
-						}
-					}
-				}
-			}
-
-			zoneMock := Zone{
-				Name: String(makeDomainCanonical(testDomain)),
-				URL:  String("/api/v1/servers/" + testVHost + "/zones/" + makeDomainCanonical(testDomain)),
-			}
-			return httpmock.NewJsonResponse(http.StatusOK, zoneMock)
-		},
-	)
-}
-
 func TestAddRecord(t *testing.T) {
 	testDomain := generateTestZone(true)
 
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
-
-	p := initialisePowerDNSTestClient()
-	registerRecordMockResponder(testDomain)
+	p := initialisePowerDNSTestClient(&mock)
+	mock.RegisterRecordMockResponder(testDomain)
 	testRecordNameTXT := generateTestRecord(p, testDomain, false)
-	if err := p.Records.Add(testDomain, testRecordNameTXT, RRTypeTXT, 300, []string{"\"bar\""}); err != nil {
+	if err := p.Records.Add(testDomain, testRecordNameTXT, types.RRTypeTXT, 300, []string{"\"bar\""}); err != nil {
 		t.Errorf("%s", err)
 	}
 	testRecordNameCNAME := generateTestRecord(p, testDomain, false)
-	if err := p.Records.Add(testDomain, testRecordNameCNAME, RRTypeCNAME, 300, []string{"foo.tld"}); err != nil {
+	if err := p.Records.Add(testDomain, testRecordNameCNAME, types.RRTypeCNAME, 300, []string{"foo.tld"}); err != nil {
 		t.Errorf("%s", err)
 	}
 }
 
 func TestAddRecordError(t *testing.T) {
-	p := initialisePowerDNSTestClient()
+	p := initialisePowerDNSTestClient(&mock)
 	p.Port = "x"
 	testDomain := generateTestZone(false)
 	testRecordName := generateTestRecord(p, testDomain, false)
-	if err := p.Records.Add(testDomain, testRecordName, RRTypeTXT, 300, []string{"\"bar\""}); err == nil {
+	if err := p.Records.Add(testDomain, testRecordName, types.RRTypeTXT, 300, []string{"\"bar\""}); err == nil {
 		t.Error("error is nil")
 	}
 }
@@ -131,23 +52,20 @@ func TestAddRecordError(t *testing.T) {
 func TestChangeRecord(t *testing.T) {
 	testDomain := generateTestZone(true)
 
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
-
-	p := initialisePowerDNSTestClient()
+	p := initialisePowerDNSTestClient(&mock)
 	testRecordName := generateTestRecord(p, testDomain, true)
-	registerRecordMockResponder(testDomain)
-	if err := p.Records.Change(testDomain, testRecordName, RRTypeTXT, 300, []string{"\"bar\""}); err != nil {
+	mock.RegisterRecordMockResponder(testDomain)
+	if err := p.Records.Change(testDomain, testRecordName, types.RRTypeTXT, 300, []string{"\"bar\""}); err != nil {
 		t.Errorf("%s", err)
 	}
 }
 
 func TestChangeRecordError(t *testing.T) {
-	p := initialisePowerDNSTestClient()
+	p := initialisePowerDNSTestClient(&mock)
 	p.Port = "x"
 	testDomain := generateTestZone(false)
 	testRecordName := generateTestRecord(p, testDomain, false)
-	if err := p.Records.Change(testDomain, testRecordName, RRTypeTXT, 300, []string{"\"bar\""}); err == nil {
+	if err := p.Records.Change(testDomain, testRecordName, types.RRTypeTXT, 300, []string{"\"bar\""}); err == nil {
 		t.Error("error is nil")
 	}
 }
@@ -155,35 +73,32 @@ func TestChangeRecordError(t *testing.T) {
 func TestDeleteRecord(t *testing.T) {
 	testDomain := generateTestZone(true)
 
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
-
-	p := initialisePowerDNSTestClient()
+	p := initialisePowerDNSTestClient(&mock)
 	testRecordName := generateTestRecord(p, testDomain, true)
-	registerRecordMockResponder(testDomain)
-	if err := p.Records.Delete(testDomain, testRecordName, RRTypeTXT); err != nil {
+	mock.RegisterRecordMockResponder(testDomain)
+	if err := p.Records.Delete(testDomain, testRecordName, types.RRTypeTXT); err != nil {
 		t.Errorf("%s", err)
 	}
 }
 
 func TestDeleteRecordError(t *testing.T) {
-	p := initialisePowerDNSTestClient()
+	p := initialisePowerDNSTestClient(&mock)
 	p.Port = "x"
 	testDomain := generateTestZone(false)
 	testRecordName := generateTestRecord(p, testDomain, false)
-	if err := p.Records.Delete(testDomain, testRecordName, RRTypeTXT); err == nil {
+	if err := p.Records.Delete(testDomain, testRecordName, types.RRTypeTXT); err == nil {
 		t.Error("error is nil")
 	}
 }
 
 func TestCanonicalResourceRecordValues(t *testing.T) {
 	testCases := []struct {
-		records     []Record
+		records     []types.Record
 		wantContent []string
 	}{
-		{[]Record{{Content: String("foo.tld")}}, []string{"foo.tld."}},
-		{[]Record{{Content: String("foo.tld.")}}, []string{"foo.tld."}},
-		{[]Record{{Content: String("foo.tld")}, {Content: String("foo.tld.")}}, []string{"foo.tld.", "foo.tld."}},
+		{[]types.Record{{Content: types.String("foo.tld")}}, []string{"foo.tld."}},
+		{[]types.Record{{Content: types.String("foo.tld.")}}, []string{"foo.tld."}},
+		{[]types.Record{{Content: types.String("foo.tld")}, {Content: types.String("foo.tld.")}}, []string{"foo.tld.", "foo.tld."}},
 	}
 
 	for i, tc := range testCases {
@@ -203,12 +118,12 @@ func TestCanonicalResourceRecordValues(t *testing.T) {
 
 func TestFixRRset(t *testing.T) {
 	testCases := []struct {
-		rrset                     RRset
+		rrset                     types.RRset
 		wantFixedCanonicalRecords bool
 	}{
-		{RRset{Type: RRTypePtr(RRTypeMX), Records: []Record{{Content: String("foo.tld")}}}, true},
-		{RRset{Type: RRTypePtr(RRTypeCNAME), Records: []Record{{Content: String("foo.tld")}}}, true},
-		{RRset{Type: RRTypePtr(RRTypeA), Records: []Record{{Content: String("foo.tld")}}}, false},
+		{types.RRset{Type: types.RRTypePtr(types.RRTypeMX), Records: []types.Record{{Content: types.String("foo.tld")}}}, true},
+		{types.RRset{Type: types.RRTypePtr(types.RRTypeCNAME), Records: []types.Record{{Content: types.String("foo.tld")}}}, true},
+		{types.RRset{Type: types.RRTypePtr(types.RRTypeA), Records: []types.Record{{Content: types.String("foo.tld")}}}, false},
 	}
 
 	for i, tc := range testCases {
@@ -218,7 +133,7 @@ func TestFixRRset(t *testing.T) {
 			if tc.wantFixedCanonicalRecords {
 				for j := range tc.rrset.Records {
 					isContent := *tc.rrset.Records[j].Content
-					wantContent := makeDomainCanonical(*tc.rrset.Records[j].Content)
+					wantContent := types.MakeDomainCanonical(*tc.rrset.Records[j].Content)
 					if isContent != wantContent {
 						t.Errorf("Comparison failed: %s != %s", isContent, wantContent)
 					}
@@ -226,7 +141,7 @@ func TestFixRRset(t *testing.T) {
 			} else {
 				for j := range tc.rrset.Records {
 					isContent := *tc.rrset.Records[j].Content
-					wrongContent := makeDomainCanonical(*tc.rrset.Records[j].Content)
+					wrongContent := types.MakeDomainCanonical(*tc.rrset.Records[j].Content)
 					if isContent == wrongContent {
 						t.Errorf("Comparison failed: %s == %s", isContent, wrongContent)
 					}

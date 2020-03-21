@@ -14,7 +14,7 @@ This community project provides bindings for the currently latest version of Pow
 * Server statistics gathering
 * DNSSEC handling
 
-For more features, consult our [documentation](https://godoc.org/github.com/joeig/go-powerdns).
+For more features, consult our [documentation](https://pkg.go.dev/github.com/joeig/go-powerdns/v2).
 
 ## Usage
 
@@ -42,9 +42,11 @@ err := pdns.Zones.Delete("example.com")
 ### Add/change/delete resource records
 
 ```go
-err := pdns.Records.Add("example.com", "www.example.com", powerdns.RRTypeAAAA, 60, []string{"::1"})
-err := pdns.Records.Change("example.com", "www.example.com", powerdns.RRTypeAAAA, 3600, []string{"::1"})
-err := pdns.Records.Delete("example.com", "www.example.com", powerdns.RRTypeA)
+import "github.com/joeig/go-powerdns/v2/types"
+
+err := pdns.Records.Add("example.com", "www.example.com", types.RRTypeAAAA, 60, []string{"::1"})
+err := pdns.Records.Change("example.com", "www.example.com", types.RRTypeAAAA, 3600, []string{"::1"})
+err := pdns.Records.Delete("example.com", "www.example.com", types.RRTypeA)
 ```
 
 ### Request server information and statistics

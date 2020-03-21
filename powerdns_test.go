@@ -2,56 +2,29 @@ package powerdns
 
 import (
 	"fmt"
-	"github.com/jarcoal/httpmock"
+	"github.com/joeig/go-powerdns/v2/mocks"
+	"github.com/joeig/go-powerdns/v2/types"
 	"net/http"
 	"net/url"
+	"os"
 	"testing"
 )
 
-const (
-	testBaseURL string = "http://localhost:8080"
-	testVHost   string = "localhost"
-	testAPIKey  string = "apipw"
-)
+var mock mocks.Mock
 
-func generateTestAPIURL() string {
-	return fmt.Sprintf("%s/api/v1", testBaseURL)
+func TestMain(m *testing.M) {
+	mock.TestBaseURL = "http://localhost:8080"
+	mock.TestVHost = "localhost"
+	mock.TestAPIKey = "apipw"
+
+	mock.Activate()
+	defer mock.DeactivateAndReset()
+
+	os.Exit(m.Run())
 }
 
-func generateTestAPIVHostURL() string {
-	return fmt.Sprintf("%s/servers/%s", generateTestAPIURL(), testVHost)
-}
-
-func verifyAPIKey(req *http.Request) *http.Response {
-	if req.Header.Get("X-Api-Key") != testAPIKey {
-		return httpmock.NewStringResponse(http.StatusUnauthorized, "Unauthorized")
-	}
-	return nil
-}
-
-func initialisePowerDNSTestClient() *Client {
-	return NewClient(testBaseURL, testVHost, map[string]string{"X-API-Key": testAPIKey}, nil)
-}
-
-func registerDoMockResponder() {
-	httpmock.RegisterResponder("GET", fmt.Sprintf("%s/servers/doesntExist", generateTestAPIURL()),
-		func(req *http.Request) (*http.Response, error) {
-			if res := verifyAPIKey(req); res != nil {
-				return res, nil
-			}
-			return httpmock.NewStringResponse(http.StatusNotFound, "Not Found"), nil
-		},
-	)
-
-	httpmock.RegisterResponder("GET", fmt.Sprintf("%s/server", generateTestAPIURL()),
-		func(req *http.Request) (*http.Response, error) {
-			mock := Error{
-				Status:  "Not Found",
-				Message: "Not Found",
-			}
-			return httpmock.NewJsonResponse(http.StatusNotImplemented, mock)
-		},
-	)
+func initialisePowerDNSTestClient(m *mocks.Mock) *Client {
+	return NewClient(m.TestBaseURL, m.TestVHost, map[string]string{"X-API-Key": m.TestAPIKey}, nil)
 }
 
 func TestNewClient(t *testing.T) {
@@ -86,7 +59,7 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestNewRequest(t *testing.T) {
-	p := initialisePowerDNSTestClient()
+	p := initialisePowerDNSTestClient(&mock)
 
 	t.Run("TestValidRequest", func(t *testing.T) {
 		if _, err := p.newRequest("GET", "servers", nil, nil); err != nil {
@@ -96,11 +69,9 @@ func TestNewRequest(t *testing.T) {
 }
 
 func TestDo(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
-	registerDoMockResponder()
+	mock.RegisterDoMockResponder()
 
-	p := initialisePowerDNSTestClient()
+	p := initialisePowerDNSTestClient(&mock)
 
 	t.Run("TestStringErrorResponse", func(t *testing.T) {
 		req, _ := p.newRequest("GET", "servers/doesntExist", nil, nil)
@@ -122,8 +93,8 @@ func TestDo(t *testing.T) {
 		}
 	})
 	t.Run("TestJSONResponseHandling", func(t *testing.T) {
-		req, _ := p.newRequest("GET", "server", nil, &Server{})
-		if _, err := p.do(req, nil); err.(*Error).Message != "Not Found" {
+		req, _ := p.newRequest("GET", "server", nil, &types.Server{})
+		if _, err := p.do(req, nil); err.(*types.Error).Message != "Not Found" {
 			t.Error("501 JSON response does not result into Error structure")
 		}
 	})
@@ -195,41 +166,5 @@ func TestGenerateAPIURL(t *testing.T) {
 	g := generateAPIURL("https", "localhost", "8080", "foo", &query)
 	if tmpl != g.String() {
 		t.Errorf("Template does not match generated API URL: %s", g.String())
-	}
-}
-
-func TestTrimDomain(t *testing.T) {
-	testCases := []struct {
-		domain     string
-		wantDomain string
-	}{
-		{"example.com.", "example.com"},
-		{"example.com", "example.com"},
-	}
-
-	for i, tc := range testCases {
-		t.Run(fmt.Sprintf("TestCase%d", i), func(t *testing.T) {
-			if trimDomain(tc.domain) != tc.wantDomain {
-				t.Error("trimDomain returned an invalid value")
-			}
-		})
-	}
-}
-
-func TestMakeDomainCanonical(t *testing.T) {
-	testCases := []struct {
-		domain     string
-		wantDomain string
-	}{
-		{"example.com.", "example.com."},
-		{"example.com", "example.com."},
-	}
-
-	for i, tc := range testCases {
-		t.Run(fmt.Sprintf("TestCase%d", i), func(t *testing.T) {
-			if makeDomainCanonical(tc.domain) != tc.wantDomain {
-				t.Error("makeDomainCanonical returned an invalid value")
-			}
-		})
 	}
 }

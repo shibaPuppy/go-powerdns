@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/joeig/go-powerdns/v2/types"
 	"io"
 	"log"
 	"net/http"
@@ -111,14 +112,6 @@ func generateAPIURL(scheme, hostname, port, path string, query *url.Values) url.
 	return u
 }
 
-func trimDomain(domain string) string {
-	return strings.TrimSuffix(domain, ".")
-}
-
-func makeDomainCanonical(domain string) string {
-	return fmt.Sprintf("%s.", trimDomain(domain))
-}
-
 func (p *Client) newRequest(method string, path string, query *url.Values, body interface{}) (*http.Request, error) {
 	var buf io.ReadWriter
 	if body != nil {
@@ -153,7 +146,7 @@ func (p *Client) do(req *http.Request, v interface{}) (*http.Response, error) {
 	}
 
 	if resp.StatusCode == 401 {
-		return resp, &Error{
+		return resp, &types.Error{
 			Status:  resp.Status,
 			Message: "Unauthorized",
 		}
@@ -164,13 +157,13 @@ func (p *Client) do(req *http.Request, v interface{}) (*http.Response, error) {
 			_ = resp.Body.Close()
 		}()
 
-		apiError := new(Error)
+		apiError := new(types.Error)
 		err = json.NewDecoder(resp.Body).Decode(apiError)
 		if err != nil {
 			return resp, err
 		}
 
-		return resp, &Error{
+		return resp, &types.Error{
 			Status:  resp.Status,
 			Message: apiError.Message,
 		}

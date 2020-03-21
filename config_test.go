@@ -1,36 +1,13 @@
 package powerdns
 
 import (
-	"github.com/jarcoal/httpmock"
-	"net/http"
 	"testing"
 )
 
-func registerConfigsMockResponder() {
-	httpmock.RegisterResponder("GET", generateTestAPIVHostURL()+"/config",
-		func(req *http.Request) (*http.Response, error) {
-			if res := verifyAPIKey(req); res != nil {
-				return res, nil
-			}
-
-			configMock := []ConfigSetting{
-				{
-					Name:  String("signing-threads"),
-					Type:  String("ConfigSetting"),
-					Value: String("3"),
-				},
-			}
-			return httpmock.NewJsonResponse(http.StatusOK, configMock)
-		},
-	)
-}
-
 func TestListConfig(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
-	registerConfigsMockResponder()
+	mock.RegisterConfigsMockResponder()
 
-	p := initialisePowerDNSTestClient()
+	p := initialisePowerDNSTestClient(&mock)
 	config, err := p.Config.List()
 	if err != nil {
 		t.Errorf("%s", err)
@@ -41,7 +18,7 @@ func TestListConfig(t *testing.T) {
 }
 
 func TestListConfigError(t *testing.T) {
-	p := initialisePowerDNSTestClient()
+	p := initialisePowerDNSTestClient(&mock)
 	p.Port = "x"
 	if _, err := p.Config.List(); err == nil {
 		t.Error("error is nil")

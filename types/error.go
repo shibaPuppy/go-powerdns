@@ -1,4 +1,4 @@
-package powerdns
+package types
 
 import "fmt"
 
