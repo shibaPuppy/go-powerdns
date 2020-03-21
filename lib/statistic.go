@@ -1,4 +1,4 @@
-package types
+package lib
 
 // Statistic structure with JSON API metadata
 type Statistic struct {

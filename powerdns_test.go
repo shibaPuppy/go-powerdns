@@ -7,8 +7,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/joeig/go-powerdns/v2/lib"
 	"github.com/joeig/go-powerdns/v2/mocks"
-	"github.com/joeig/go-powerdns/v2/types"
 )
 
 var mock mocks.Mock
@@ -106,8 +106,8 @@ func TestDo(t *testing.T) {
 		}
 	})
 	t.Run("TestJSONResponseHandling", func(t *testing.T) {
-		req, _ := p.newRequest("GET", "server", nil, &types.Server{})
-		if resp, err := p.do(req, nil); err.(*types.Error).Message != "Not Found" {
+		req, _ := p.newRequest("GET", "server", nil, &lib.Server{})
+		if resp, err := p.do(req, nil); err.(*lib.Error).Message != "Not Found" {
 			defer func() {
 				_ = resp.Body.Close()
 			}()

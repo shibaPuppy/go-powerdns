@@ -1,4 +1,4 @@
-package types
+package lib
 
 // RRset structure with JSON API metadata
 type RRset struct {

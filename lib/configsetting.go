@@ -1,4 +1,4 @@
-package types
+package lib
 
 // ConfigSetting structure with JSON API metadata
 type ConfigSetting struct {

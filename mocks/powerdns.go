@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/jarcoal/httpmock"
-	"github.com/joeig/go-powerdns/v2/types"
+	"github.com/joeig/go-powerdns/v2/lib"
 )
 
 func (m *Mock) RegisterDoMockResponder() {
@@ -20,7 +20,7 @@ func (m *Mock) RegisterDoMockResponder() {
 
 	httpmock.RegisterResponder("GET", fmt.Sprintf("%s/server", m.generateTestAPIURL()),
 		func(req *http.Request) (*http.Response, error) {
-			mock := types.Error{
+			mock := lib.Error{
 				Status:  "Not Found",
 				Message: "Not Found",
 			}

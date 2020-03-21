@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/jarcoal/httpmock"
-	"github.com/joeig/go-powerdns/v2/types"
+	"github.com/joeig/go-powerdns/v2/lib"
 )
 
 func (m *Mock) RegisterConfigsMockResponder() {
@@ -14,11 +14,11 @@ func (m *Mock) RegisterConfigsMockResponder() {
 				return res, nil
 			}
 
-			configMock := []types.ConfigSetting{
+			configMock := []lib.ConfigSetting{
 				{
-					Name:  types.String("signing-threads"),
-					Type:  types.String("ConfigSetting"),
-					Value: types.String("3"),
+					Name:  lib.String("signing-threads"),
+					Type:  lib.String("ConfigSetting"),
+					Value: lib.String("3"),
 				},
 			}
 			return httpmock.NewJsonResponse(http.StatusOK, configMock)

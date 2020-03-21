@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/joeig/go-powerdns/v2/types"
+	"github.com/joeig/go-powerdns/v2/lib"
 )
 
 func generateTestZone(autoAddZone bool) string {
@@ -52,7 +52,7 @@ func TestListZonesError(t *testing.T) {
 
 func TestGetZone(t *testing.T) {
 	testDomain := generateTestZone(true)
-	mock.RegisterZoneMockResponder(testDomain, types.NativeZoneKind)
+	mock.RegisterZoneMockResponder(testDomain, lib.NativeZoneKind)
 	p := initialisePowerDNSTestClient(&mock)
 
 	zone, err := p.Zones.Get(testDomain)
@@ -60,7 +60,7 @@ func TestGetZone(t *testing.T) {
 		t.Errorf("%s", err)
 	}
 
-	if *zone.ID != types.MakeDomainCanonical(testDomain) {
+	if *zone.ID != lib.MakeDomainCanonical(testDomain) {
 		t.Error("Received no zone")
 	}
 }
@@ -77,7 +77,7 @@ func TestGetZonesError(t *testing.T) {
 
 func TestAddNativeZone(t *testing.T) {
 	testDomain := generateTestZone(false)
-	mock.RegisterZoneMockResponder(testDomain, types.NativeZoneKind)
+	mock.RegisterZoneMockResponder(testDomain, lib.NativeZoneKind)
 	p := initialisePowerDNSTestClient(&mock)
 
 	zone, err := p.Zones.AddNative(testDomain, true, "", false, "foo", "foo", true, []string{"ns.foo.tld."})
@@ -85,7 +85,7 @@ func TestAddNativeZone(t *testing.T) {
 		t.Errorf("%s", err)
 	}
 
-	if *zone.ID != types.MakeDomainCanonical(testDomain) || *zone.Kind != types.NativeZoneKind {
+	if *zone.ID != lib.MakeDomainCanonical(testDomain) || *zone.Kind != lib.NativeZoneKind {
 		t.Error("Zone wasn't created")
 	}
 }
@@ -102,7 +102,7 @@ func TestAddNativeZoneError(t *testing.T) {
 
 func TestAddMasterZone(t *testing.T) {
 	testDomain := generateTestZone(false)
-	mock.RegisterZoneMockResponder(testDomain, types.MasterZoneKind)
+	mock.RegisterZoneMockResponder(testDomain, lib.MasterZoneKind)
 	p := initialisePowerDNSTestClient(&mock)
 
 	zone, err := p.Zones.AddMaster(testDomain, true, "", false, "foo", "foo", true, []string{"ns.foo.tld."})
@@ -110,7 +110,7 @@ func TestAddMasterZone(t *testing.T) {
 		t.Errorf("%s", err)
 	}
 
-	if *zone.ID != types.MakeDomainCanonical(testDomain) || *zone.Kind != types.MasterZoneKind {
+	if *zone.ID != lib.MakeDomainCanonical(testDomain) || *zone.Kind != lib.MasterZoneKind {
 		t.Error("Zone wasn't created")
 	}
 }
@@ -127,7 +127,7 @@ func TestAddMasterZoneError(t *testing.T) {
 
 func TestAddSlaveZone(t *testing.T) {
 	testDomain := generateTestZone(false)
-	mock.RegisterZoneMockResponder(testDomain, types.SlaveZoneKind)
+	mock.RegisterZoneMockResponder(testDomain, lib.SlaveZoneKind)
 	p := initialisePowerDNSTestClient(&mock)
 
 	zone, err := p.Zones.AddSlave(testDomain, []string{"127.0.0.1"})
@@ -135,7 +135,7 @@ func TestAddSlaveZone(t *testing.T) {
 		t.Errorf("%s", err)
 	}
 
-	if *zone.ID != types.MakeDomainCanonical(testDomain) || *zone.Kind != types.SlaveZoneKind {
+	if *zone.ID != lib.MakeDomainCanonical(testDomain) || *zone.Kind != lib.SlaveZoneKind {
 		t.Error("Zone wasn't created")
 	}
 }
@@ -153,17 +153,17 @@ func TestAddSlaveZoneError(t *testing.T) {
 func TestChangeZone(t *testing.T) {
 	testDomain := generateTestZone(true)
 
-	mock.RegisterZoneMockResponder(testDomain, types.NativeZoneKind)
+	mock.RegisterZoneMockResponder(testDomain, lib.NativeZoneKind)
 
 	p := initialisePowerDNSTestClient(&mock)
 
 	t.Run("ChangeValidZone", func(t *testing.T) {
-		if err := p.Zones.Change(testDomain, &types.Zone{Nameservers: []string{"ns23.foo.tld."}}); err != nil {
+		if err := p.Zones.Change(testDomain, &lib.Zone{Nameservers: []string{"ns23.foo.tld."}}); err != nil {
 			t.Errorf("%s", err)
 		}
 	})
 	t.Run("ChangeInvalidZone", func(t *testing.T) {
-		if err := p.Zones.Change("doesnt-exist", &types.Zone{Nameservers: []string{"ns23.foo.tld."}}); err == nil {
+		if err := p.Zones.Change("doesnt-exist", &lib.Zone{Nameservers: []string{"ns23.foo.tld."}}); err == nil {
 			t.Errorf("Changing an invalid zone does not return an error")
 		}
 	})
@@ -174,14 +174,14 @@ func TestChangeZoneError(t *testing.T) {
 	p := initialisePowerDNSTestClient(&mock)
 	p.Port = "x"
 
-	if err := p.Zones.Change(testDomain, &types.Zone{Nameservers: []string{"ns23.foo.tld."}}); err == nil {
+	if err := p.Zones.Change(testDomain, &lib.Zone{Nameservers: []string{"ns23.foo.tld."}}); err == nil {
 		t.Error("error is nil")
 	}
 }
 
 func TestDeleteZone(t *testing.T) {
 	testDomain := generateTestZone(true)
-	mock.RegisterZoneMockResponder(testDomain, types.NativeZoneKind)
+	mock.RegisterZoneMockResponder(testDomain, lib.NativeZoneKind)
 	p := initialisePowerDNSTestClient(&mock)
 
 	if err := p.Zones.Delete(testDomain); err != nil {
@@ -201,7 +201,7 @@ func TestDeleteZoneError(t *testing.T) {
 
 func TestNotify(t *testing.T) {
 	testDomain := generateTestZone(true)
-	mock.RegisterZoneMockResponder(testDomain, types.MasterZoneKind)
+	mock.RegisterZoneMockResponder(testDomain, lib.MasterZoneKind)
 	p := initialisePowerDNSTestClient(&mock)
 
 	notifyResult, err := p.Zones.Notify(testDomain)
@@ -226,7 +226,7 @@ func TestNotifyError(t *testing.T) {
 
 func TestExport(t *testing.T) {
 	testDomain := generateTestZone(true)
-	mock.RegisterZoneMockResponder(testDomain, types.NativeZoneKind)
+	mock.RegisterZoneMockResponder(testDomain, lib.NativeZoneKind)
 	p := initialisePowerDNSTestClient(&mock)
 
 	export, err := p.Zones.Export(testDomain)

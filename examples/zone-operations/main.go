@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/joeig/go-powerdns/v2"
-	"github.com/joeig/go-powerdns/v2/types"
+	"github.com/joeig/go-powerdns/v2/lib"
 	"log"
 	"math/rand"
 	"time"
@@ -26,27 +26,27 @@ func main() {
 	fmt.Printf("zone: %s\n\n", o)
 
 	// Add and change an A record
-	if err := pdns.Records.Add(domain, fmt.Sprintf("www.%s", domain), types.RRTypeA, 1337, []string{"127.0.0.9"}); err != nil {
+	if err := pdns.Records.Add(domain, fmt.Sprintf("www.%s", domain), lib.RRTypeA, 1337, []string{"127.0.0.9"}); err != nil {
 		log.Fatalf("%v", err)
 	}
-	if err := pdns.Records.Change(domain, fmt.Sprintf("www.%s", domain), types.RRTypeA, 42, []string{"127.0.0.10"}); err != nil {
+	if err := pdns.Records.Change(domain, fmt.Sprintf("www.%s", domain), lib.RRTypeA, 42, []string{"127.0.0.10"}); err != nil {
 		log.Fatalf("%v", err)
 	}
 
 	// Add a MX record with multiple values
-	if err := pdns.Records.Add(domain, domain, types.RRTypeMX, 1337, []string{"10 mx1.example.com.", "20 mx2.example.com."}); err != nil {
+	if err := pdns.Records.Add(domain, domain, lib.RRTypeMX, 1337, []string{"10 mx1.example.com.", "20 mx2.example.com."}); err != nil {
 		log.Fatalf("%v", err)
 	}
 
 	// Add a TXT record
-	if err := pdns.Records.Add(domain, fmt.Sprintf("www.%s", domain), types.RRTypeTXT, 1337, []string{"\"foo1\""}); err != nil {
+	if err := pdns.Records.Add(domain, fmt.Sprintf("www.%s", domain), lib.RRTypeTXT, 1337, []string{"\"foo1\""}); err != nil {
 		log.Fatalf("%v", err)
 	}
 
 	// Change a zone
-	zoneChangeSet := &types.Zone{
-		Account: types.String("test"),
-		DNSsec:  types.Bool(true),
+	zoneChangeSet := &lib.Zone{
+		Account: lib.String("test"),
+		DNSsec:  lib.Bool(true),
 	}
 
 	err = pdns.Zones.Change(domain, zoneChangeSet)
@@ -62,5 +62,5 @@ func main() {
 
 	o, _ = json.MarshalIndent(changedZone, "", "\t")
 	fmt.Printf("changed zone: %s\n\n", o)
-	fmt.Printf("Account is \"%s\" and DNSsec is %t\n\n", types.StringValue(changedZone.Account), types.BoolValue(changedZone.DNSsec))
+	fmt.Printf("Account is \"%s\" and DNSsec is %t\n\n", lib.StringValue(changedZone.Account), lib.BoolValue(changedZone.DNSsec))
 }

@@ -4,49 +4,49 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/joeig/go-powerdns/v2/types"
+	"github.com/joeig/go-powerdns/v2/lib"
 )
 
 // ZonesService handles communication with the zones related methods of the Client API
 type ZonesService service
 
 // List retrieves a list of Zones
-func (z *ZonesService) List() ([]types.Zone, error) {
+func (z *ZonesService) List() ([]lib.Zone, error) {
 	req, err := z.client.newRequest("GET", fmt.Sprintf("servers/%s/zones", z.client.VHost), nil, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	zones := make([]types.Zone, 0)
+	zones := make([]lib.Zone, 0)
 	_, err = z.client.do(req, &zones)
 
 	return zones, err
 }
 
 // Get returns a certain Zone for a given domain
-func (z *ZonesService) Get(domain string) (*types.Zone, error) {
-	req, err := z.client.newRequest("GET", fmt.Sprintf("servers/%s/zones/%s", z.client.VHost, types.TrimDomain(domain)), nil, nil)
+func (z *ZonesService) Get(domain string) (*lib.Zone, error) {
+	req, err := z.client.newRequest("GET", fmt.Sprintf("servers/%s/zones/%s", z.client.VHost, lib.TrimDomain(domain)), nil, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	zone := &types.Zone{}
+	zone := &lib.Zone{}
 	_, err = z.client.do(req, &zone)
 
 	return zone, err
 }
 
 // AddNative creates a new native zone
-func (z *ZonesService) AddNative(domain string, dnssec bool, nsec3Param string, nsec3Narrow bool, soaEdit, soaEditAPI string, apiRectify bool, nameservers []string) (*types.Zone, error) {
-	zone := types.Zone{
-		Name:        types.String(domain),
-		Kind:        types.ZoneKindPtr(types.NativeZoneKind),
-		DNSsec:      types.Bool(dnssec),
-		Nsec3Param:  types.String(nsec3Param),
-		Nsec3Narrow: types.Bool(nsec3Narrow),
-		SOAEdit:     types.String(soaEdit),
-		SOAEditAPI:  types.String(soaEditAPI),
-		APIRectify:  types.Bool(apiRectify),
+func (z *ZonesService) AddNative(domain string, dnssec bool, nsec3Param string, nsec3Narrow bool, soaEdit, soaEditAPI string, apiRectify bool, nameservers []string) (*lib.Zone, error) {
+	zone := lib.Zone{
+		Name:        lib.String(domain),
+		Kind:        lib.ZoneKindPtr(lib.NativeZoneKind),
+		DNSsec:      lib.Bool(dnssec),
+		Nsec3Param:  lib.String(nsec3Param),
+		Nsec3Narrow: lib.Bool(nsec3Narrow),
+		SOAEdit:     lib.String(soaEdit),
+		SOAEditAPI:  lib.String(soaEditAPI),
+		APIRectify:  lib.Bool(apiRectify),
 		Nameservers: nameservers,
 	}
 
@@ -54,16 +54,16 @@ func (z *ZonesService) AddNative(domain string, dnssec bool, nsec3Param string, 
 }
 
 // AddMaster creates a new master zone
-func (z *ZonesService) AddMaster(domain string, dnssec bool, nsec3Param string, nsec3Narrow bool, soaEdit, soaEditAPI string, apiRectify bool, nameservers []string) (*types.Zone, error) {
-	zone := types.Zone{
-		Name:        types.String(domain),
-		Kind:        types.ZoneKindPtr(types.MasterZoneKind),
-		DNSsec:      types.Bool(dnssec),
-		Nsec3Param:  types.String(nsec3Param),
-		Nsec3Narrow: types.Bool(nsec3Narrow),
-		SOAEdit:     types.String(soaEdit),
-		SOAEditAPI:  types.String(soaEditAPI),
-		APIRectify:  types.Bool(apiRectify),
+func (z *ZonesService) AddMaster(domain string, dnssec bool, nsec3Param string, nsec3Narrow bool, soaEdit, soaEditAPI string, apiRectify bool, nameservers []string) (*lib.Zone, error) {
+	zone := lib.Zone{
+		Name:        lib.String(domain),
+		Kind:        lib.ZoneKindPtr(lib.MasterZoneKind),
+		DNSsec:      lib.Bool(dnssec),
+		Nsec3Param:  lib.String(nsec3Param),
+		Nsec3Narrow: lib.Bool(nsec3Narrow),
+		SOAEdit:     lib.String(soaEdit),
+		SOAEditAPI:  lib.String(soaEditAPI),
+		APIRectify:  lib.Bool(apiRectify),
 		Nameservers: nameservers,
 	}
 
@@ -71,39 +71,39 @@ func (z *ZonesService) AddMaster(domain string, dnssec bool, nsec3Param string, 
 }
 
 // AddSlave creates a new slave zone
-func (z *ZonesService) AddSlave(domain string, masters []string) (*types.Zone, error) {
-	zone := types.Zone{
-		Name:    types.String(domain),
-		Kind:    types.ZoneKindPtr(types.SlaveZoneKind),
+func (z *ZonesService) AddSlave(domain string, masters []string) (*lib.Zone, error) {
+	zone := lib.Zone{
+		Name:    lib.String(domain),
+		Kind:    lib.ZoneKindPtr(lib.SlaveZoneKind),
 		Masters: masters,
 	}
 
 	return z.postZone(&zone)
 }
 
-func (z *ZonesService) postZone(zone *types.Zone) (*types.Zone, error) {
-	zone.Name = types.String(types.MakeDomainCanonical(*zone.Name))
-	zone.Type = types.ZoneTypePtr(types.ZoneZoneType)
+func (z *ZonesService) postZone(zone *lib.Zone) (*lib.Zone, error) {
+	zone.Name = lib.String(lib.MakeDomainCanonical(*zone.Name))
+	zone.Type = lib.ZoneTypePtr(lib.ZoneZoneType)
 
 	req, err := z.client.newRequest("POST", fmt.Sprintf("servers/%s/zones", z.client.VHost), nil, zone)
 	if err != nil {
 		return nil, err
 	}
 
-	createdZone := new(types.Zone)
+	createdZone := new(lib.Zone)
 	_, err = z.client.do(req, &createdZone)
 
 	return createdZone, err
 }
 
 // Change modifies an existing zone
-func (z *ZonesService) Change(domain string, zone *types.Zone) error {
+func (z *ZonesService) Change(domain string, zone *lib.Zone) error {
 	zone.ID = nil
 	zone.Name = nil
 	zone.Type = nil
 	zone.URL = nil
 
-	req, err := z.client.newRequest("PUT", fmt.Sprintf("servers/%s/zones/%s", z.client.VHost, types.TrimDomain(domain)), nil, zone)
+	req, err := z.client.newRequest("PUT", fmt.Sprintf("servers/%s/zones/%s", z.client.VHost, lib.TrimDomain(domain)), nil, zone)
 	if err != nil {
 		return err
 	}
@@ -115,7 +115,7 @@ func (z *ZonesService) Change(domain string, zone *types.Zone) error {
 
 // Delete removes a certain Zone for a given domain
 func (z *ZonesService) Delete(domain string) error {
-	req, err := z.client.newRequest("DELETE", fmt.Sprintf("servers/%s/zones/%s", z.client.VHost, types.TrimDomain(domain)), nil, nil)
+	req, err := z.client.newRequest("DELETE", fmt.Sprintf("servers/%s/zones/%s", z.client.VHost, lib.TrimDomain(domain)), nil, nil)
 	if err != nil {
 		return err
 	}
@@ -126,21 +126,21 @@ func (z *ZonesService) Delete(domain string) error {
 }
 
 // Notify sends a DNS notify packet to all slaves
-func (z *ZonesService) Notify(domain string) (*types.NotifyResult, error) {
-	req, err := z.client.newRequest("PUT", fmt.Sprintf("servers/%s/zones/%s/notify", z.client.VHost, types.TrimDomain(domain)), nil, nil)
+func (z *ZonesService) Notify(domain string) (*lib.NotifyResult, error) {
+	req, err := z.client.newRequest("PUT", fmt.Sprintf("servers/%s/zones/%s/notify", z.client.VHost, lib.TrimDomain(domain)), nil, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	notifyResult := &types.NotifyResult{}
+	notifyResult := &lib.NotifyResult{}
 	_, err = z.client.do(req, notifyResult)
 
 	return notifyResult, err
 }
 
 // Export returns a BIND-like Zone file
-func (z *ZonesService) Export(domain string) (types.Export, error) {
-	req, err := z.client.newRequest("GET", fmt.Sprintf("servers/%s/zones/%s/export", z.client.VHost, types.TrimDomain(domain)), nil, nil)
+func (z *ZonesService) Export(domain string) (lib.Export, error) {
+	req, err := z.client.newRequest("GET", fmt.Sprintf("servers/%s/zones/%s/export", z.client.VHost, lib.TrimDomain(domain)), nil, nil)
 	if err != nil {
 		return "", err
 	}
@@ -152,5 +152,5 @@ func (z *ZonesService) Export(domain string) (types.Export, error) {
 
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
 
-	return types.Export(bodyBytes), nil
+	return lib.Export(bodyBytes), nil
 }

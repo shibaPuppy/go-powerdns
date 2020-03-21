@@ -1,4 +1,4 @@
-package types
+package lib
 
 // Bool is a helper function that allocates a new bool value to store v and returns a pointer to it.
 func Bool(v bool) *bool {

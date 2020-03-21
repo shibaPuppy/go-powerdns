@@ -1,4 +1,4 @@
-package types
+package lib
 
 // Zone structure with JSON API metadata
 type Zone struct {

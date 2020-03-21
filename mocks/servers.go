@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/jarcoal/httpmock"
-	"github.com/joeig/go-powerdns/v2/types"
+	"github.com/joeig/go-powerdns/v2/lib"
 )
 
 func (m *Mock) RegisterServersMockResponder() {
@@ -15,15 +15,15 @@ func (m *Mock) RegisterServersMockResponder() {
 				return res, nil
 			}
 
-			serversMock := []types.Server{
+			serversMock := []lib.Server{
 				{
-					Type:       types.String("Server"),
-					ID:         types.String(m.TestVHost),
-					DaemonType: types.String("authoritative"),
-					Version:    types.String("4.1.2"),
-					URL:        types.String("/api/v1/servers/" + m.TestVHost),
-					ConfigURL:  types.String("/api/v1/servers/" + m.TestVHost + "/config{/config_setting}"),
-					ZonesURL:   types.String("/api/v1/servers/" + m.TestVHost + "/zones{/zone}"),
+					Type:       lib.String("Server"),
+					ID:         lib.String(m.TestVHost),
+					DaemonType: lib.String("authoritative"),
+					Version:    lib.String("4.1.2"),
+					URL:        lib.String("/api/v1/servers/" + m.TestVHost),
+					ConfigURL:  lib.String("/api/v1/servers/" + m.TestVHost + "/config{/config_setting}"),
+					ZonesURL:   lib.String("/api/v1/servers/" + m.TestVHost + "/zones{/zone}"),
 				},
 			}
 			return httpmock.NewJsonResponse(http.StatusOK, serversMock)
@@ -36,14 +36,14 @@ func (m *Mock) RegisterServersMockResponder() {
 				return res, nil
 			}
 
-			serverMock := types.Server{
-				Type:       types.String("Server"),
-				ID:         types.String(m.TestVHost),
-				DaemonType: types.String("authoritative"),
-				Version:    types.String("4.1.2"),
-				URL:        types.String("/api/v1/servers/" + m.TestVHost),
-				ConfigURL:  types.String("/api/v1/servers/" + m.TestVHost + "/config{/config_setting}"),
-				ZonesURL:   types.String("/api/v1/servers/" + m.TestVHost + "/zones{/zone}"),
+			serverMock := lib.Server{
+				Type:       lib.String("Server"),
+				ID:         lib.String(m.TestVHost),
+				DaemonType: lib.String("authoritative"),
+				Version:    lib.String("4.1.2"),
+				URL:        lib.String("/api/v1/servers/" + m.TestVHost),
+				ConfigURL:  lib.String("/api/v1/servers/" + m.TestVHost + "/config{/config_setting}"),
+				ZonesURL:   lib.String("/api/v1/servers/" + m.TestVHost + "/zones{/zone}"),
 			}
 			return httpmock.NewJsonResponse(http.StatusOK, serverMock)
 		},
@@ -57,13 +57,13 @@ func (m *Mock) RegisterCacheFlushMockResponder(testDomain string) {
 				return res, nil
 			}
 
-			if req.URL.Query().Get("domain") != types.MakeDomainCanonical(testDomain) {
+			if req.URL.Query().Get("domain") != lib.MakeDomainCanonical(testDomain) {
 				return httpmock.NewStringResponse(http.StatusUnprocessableEntity, "Unprocessable Eneity"), nil
 			}
 
-			cacheFlushResultMock := types.CacheFlushResult{
-				Count:  types.Uint32(1),
-				Result: types.String("foo"),
+			cacheFlushResultMock := lib.CacheFlushResult{
+				Count:  lib.Uint32(1),
+				Result: lib.String("foo"),
 			}
 			return httpmock.NewJsonResponse(http.StatusOK, cacheFlushResultMock)
 		},

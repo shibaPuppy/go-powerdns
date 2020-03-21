@@ -7,21 +7,21 @@ import (
 	"regexp"
 
 	"github.com/jarcoal/httpmock"
-	"github.com/joeig/go-powerdns/v2/types"
+	"github.com/joeig/go-powerdns/v2/lib"
 )
 
-func validateZoneType(zoneType types.ZoneType) error {
+func validateZoneType(zoneType lib.ZoneType) error {
 	if zoneType != "Zone" {
-		return &types.Error{}
+		return &lib.Error{}
 	}
 
 	return nil
 }
 
-func validateZoneKind(zoneKind types.ZoneKind) error {
+func validateZoneKind(zoneKind lib.ZoneKind) error {
 	matched, err := regexp.MatchString(`^(Native|Master|Slave)$`, string(zoneKind))
 	if !matched || err != nil {
-		return &types.Error{}
+		return &lib.Error{}
 	}
 
 	return nil
@@ -40,14 +40,14 @@ func (m *Mock) RegisterZonesMockResponder() {
 			}
 
 			testDomain := "example.com"
-			zonesMock := []types.Zone{
+			zonesMock := []lib.Zone{
 				{
-					ID:             types.String(types.MakeDomainCanonical(testDomain)),
-					Name:           types.String(types.MakeDomainCanonical(testDomain)),
-					URL:            types.String("/api/v1/servers/" + m.TestVHost + "/zones/" + types.MakeDomainCanonical(testDomain)),
-					Kind:           types.ZoneKindPtr(types.NativeZoneKind),
-					Serial:         types.Uint32(1337),
-					NotifiedSerial: types.Uint32(1337),
+					ID:             lib.String(lib.MakeDomainCanonical(testDomain)),
+					Name:           lib.String(lib.MakeDomainCanonical(testDomain)),
+					URL:            lib.String("/api/v1/servers/" + m.TestVHost + "/zones/" + lib.MakeDomainCanonical(testDomain)),
+					Kind:           lib.ZoneKindPtr(lib.NativeZoneKind),
+					Serial:         lib.Uint32(1337),
+					NotifiedSerial: lib.Uint32(1337),
 				},
 			}
 			return httpmock.NewJsonResponse(http.StatusOK, zonesMock)
@@ -55,7 +55,7 @@ func (m *Mock) RegisterZonesMockResponder() {
 	)
 }
 
-func (m *Mock) RegisterZoneMockResponder(testDomain string, zoneKind types.ZoneKind) {
+func (m *Mock) RegisterZoneMockResponder(testDomain string, zoneKind lib.ZoneKind) {
 	httpmock.RegisterResponder("GET", m.generateTestAPIVHostURL()+"/zones/"+testDomain,
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {
@@ -67,25 +67,25 @@ func (m *Mock) RegisterZoneMockResponder(testDomain string, zoneKind types.ZoneK
 				return httpmock.NewBytesResponse(http.StatusBadRequest, []byte{}), nil
 			}
 
-			zoneMock := types.Zone{
-				ID:   types.String(types.MakeDomainCanonical(testDomain)),
-				Name: types.String(types.MakeDomainCanonical(testDomain)),
-				URL:  types.String("/api/v1/servers/" + m.TestVHost + "/zones/" + types.MakeDomainCanonical(testDomain)),
-				Kind: types.ZoneKindPtr(types.NativeZoneKind),
-				RRsets: []types.RRset{
+			zoneMock := lib.Zone{
+				ID:   lib.String(lib.MakeDomainCanonical(testDomain)),
+				Name: lib.String(lib.MakeDomainCanonical(testDomain)),
+				URL:  lib.String("/api/v1/servers/" + m.TestVHost + "/zones/" + lib.MakeDomainCanonical(testDomain)),
+				Kind: lib.ZoneKindPtr(lib.NativeZoneKind),
+				RRsets: []lib.RRset{
 					{
-						Name: types.String(types.MakeDomainCanonical(testDomain)),
-						Type: types.RRTypePtr(types.RRTypeSOA),
-						TTL:  types.Uint32(3600),
-						Records: []types.Record{
+						Name: lib.String(lib.MakeDomainCanonical(testDomain)),
+						Type: lib.RRTypePtr(lib.RRTypeSOA),
+						TTL:  lib.Uint32(3600),
+						Records: []lib.Record{
 							{
-								Content: types.String("a.misconfigured.powerdns.server. hostmaster." + types.MakeDomainCanonical(testDomain) + " 1337 10800 3600 604800 3600"),
+								Content: lib.String("a.misconfigured.powerdns.server. hostmaster." + lib.MakeDomainCanonical(testDomain) + " 1337 10800 3600 604800 3600"),
 							},
 						},
 					},
 				},
-				Serial:         types.Uint32(1337),
-				NotifiedSerial: types.Uint32(1337),
+				Serial:         lib.Uint32(1337),
+				NotifiedSerial: lib.Uint32(1337),
 			}
 			return httpmock.NewJsonResponse(http.StatusOK, zoneMock)
 		},
@@ -102,7 +102,7 @@ func (m *Mock) RegisterZoneMockResponder(testDomain string, zoneKind types.ZoneK
 				return httpmock.NewBytesResponse(http.StatusBadRequest, []byte{}), nil
 			}
 
-			var zone types.Zone
+			var zone lib.Zone
 			if json.NewDecoder(req.Body).Decode(&zone) != nil {
 				log.Print("Cannot decode request body")
 				return httpmock.NewBytesResponse(http.StatusBadRequest, []byte{}), nil
@@ -118,65 +118,65 @@ func (m *Mock) RegisterZoneMockResponder(testDomain string, zoneKind types.ZoneK
 				return httpmock.NewStringResponse(http.StatusUnprocessableEntity, "Unprocessable Entity"), nil
 			}
 
-			var zoneMock types.Zone
+			var zoneMock lib.Zone
 			switch zoneKind {
-			case types.NativeZoneKind, types.MasterZoneKind:
-				zoneMock = types.Zone{
-					ID:   types.String(types.MakeDomainCanonical(testDomain)),
-					Name: types.String(types.MakeDomainCanonical(testDomain)),
-					Type: types.ZoneTypePtr(types.ZoneZoneType),
-					URL:  types.String("api/v1/servers/" + m.TestVHost + "/zones/" + types.MakeDomainCanonical(testDomain)),
-					Kind: types.ZoneKindPtr(zoneKind),
-					RRsets: []types.RRset{
+			case lib.NativeZoneKind, lib.MasterZoneKind:
+				zoneMock = lib.Zone{
+					ID:   lib.String(lib.MakeDomainCanonical(testDomain)),
+					Name: lib.String(lib.MakeDomainCanonical(testDomain)),
+					Type: lib.ZoneTypePtr(lib.ZoneZoneType),
+					URL:  lib.String("api/v1/servers/" + m.TestVHost + "/zones/" + lib.MakeDomainCanonical(testDomain)),
+					Kind: lib.ZoneKindPtr(zoneKind),
+					RRsets: []lib.RRset{
 						{
-							Name: types.String(types.MakeDomainCanonical(testDomain)),
-							Type: types.RRTypePtr(types.RRTypeSOA),
-							TTL:  types.Uint32(3600),
-							Records: []types.Record{
+							Name: lib.String(lib.MakeDomainCanonical(testDomain)),
+							Type: lib.RRTypePtr(lib.RRTypeSOA),
+							TTL:  lib.Uint32(3600),
+							Records: []lib.Record{
 								{
-									Content:  types.String("a.misconfigured.powerdns.server. hostmaster." + types.MakeDomainCanonical(testDomain) + " 0 10800 3600 604800 3600"),
-									Disabled: types.Bool(false),
+									Content:  lib.String("a.misconfigured.powerdns.server. hostmaster." + lib.MakeDomainCanonical(testDomain) + " 0 10800 3600 604800 3600"),
+									Disabled: lib.Bool(false),
 								},
 							},
 						},
 						{
-							Name: types.String(types.MakeDomainCanonical(testDomain)),
-							Type: types.RRTypePtr(types.RRTypeNS),
-							TTL:  types.Uint32(3600),
-							Records: []types.Record{
+							Name: lib.String(lib.MakeDomainCanonical(testDomain)),
+							Type: lib.RRTypePtr(lib.RRTypeNS),
+							TTL:  lib.Uint32(3600),
+							Records: []lib.Record{
 								{
-									Content:  types.String("ns.example.tld."),
-									Disabled: types.Bool(false),
+									Content:  lib.String("ns.example.tld."),
+									Disabled: lib.Bool(false),
 								},
 							},
 						},
 					},
-					Serial:      types.Uint32(0),
+					Serial:      lib.Uint32(0),
 					Masters:     []string{},
-					DNSsec:      types.Bool(true),
-					Nsec3Param:  types.String(""),
-					Nsec3Narrow: types.Bool(false),
-					SOAEdit:     types.String("foo"),
-					SOAEditAPI:  types.String("foo"),
-					APIRectify:  types.Bool(true),
-					Account:     types.String(""),
+					DNSsec:      lib.Bool(true),
+					Nsec3Param:  lib.String(""),
+					Nsec3Narrow: lib.Bool(false),
+					SOAEdit:     lib.String("foo"),
+					SOAEditAPI:  lib.String("foo"),
+					APIRectify:  lib.Bool(true),
+					Account:     lib.String(""),
 				}
-			case types.SlaveZoneKind:
-				zoneMock = types.Zone{
-					ID:          types.String(types.MakeDomainCanonical(testDomain)),
-					Name:        types.String(types.MakeDomainCanonical(testDomain)),
-					Type:        types.ZoneTypePtr(types.ZoneZoneType),
-					URL:         types.String("api/v1/servers/" + m.TestVHost + "/zones/" + types.MakeDomainCanonical(testDomain)),
-					Kind:        types.ZoneKindPtr(zoneKind),
-					Serial:      types.Uint32(0),
+			case lib.SlaveZoneKind:
+				zoneMock = lib.Zone{
+					ID:          lib.String(lib.MakeDomainCanonical(testDomain)),
+					Name:        lib.String(lib.MakeDomainCanonical(testDomain)),
+					Type:        lib.ZoneTypePtr(lib.ZoneZoneType),
+					URL:         lib.String("api/v1/servers/" + m.TestVHost + "/zones/" + lib.MakeDomainCanonical(testDomain)),
+					Kind:        lib.ZoneKindPtr(zoneKind),
+					Serial:      lib.Uint32(0),
 					Masters:     []string{"127.0.0.1"},
-					DNSsec:      types.Bool(true),
-					Nsec3Param:  types.String(""),
-					Nsec3Narrow: types.Bool(false),
-					SOAEdit:     types.String(""),
-					SOAEditAPI:  types.String("DEFAULT"),
-					APIRectify:  types.Bool(true),
-					Account:     types.String(""),
+					DNSsec:      lib.Bool(true),
+					Nsec3Param:  lib.String(""),
+					Nsec3Narrow: lib.Bool(false),
+					SOAEdit:     lib.String(""),
+					SOAEditAPI:  lib.String("DEFAULT"),
+					APIRectify:  lib.Bool(true),
+					Account:     lib.String(""),
 				}
 			default:
 				return httpmock.NewStringResponse(http.StatusUnprocessableEntity, "Unprocessable Entity"), nil
@@ -242,7 +242,7 @@ func (m *Mock) RegisterZoneMockResponder(testDomain string, zoneKind types.ZoneK
 				return httpmock.NewBytesResponse(http.StatusBadRequest, []byte{}), nil
 			}
 
-			return httpmock.NewStringResponse(http.StatusOK, types.MakeDomainCanonical(testDomain)+"	3600	SOA	a.misconfigured.powerdns.server. hostmaster."+types.MakeDomainCanonical(testDomain)+" 1 10800 3600 604800 3600"), nil
+			return httpmock.NewStringResponse(http.StatusOK, lib.MakeDomainCanonical(testDomain)+"	3600	SOA	a.misconfigured.powerdns.server. hostmaster."+lib.MakeDomainCanonical(testDomain)+" 1 10800 3600 604800 3600"), nil
 		},
 	)
 }

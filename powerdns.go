@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/joeig/go-powerdns/v2/types"
+	"github.com/joeig/go-powerdns/v2/lib"
 )
 
 type service struct {
@@ -152,7 +152,7 @@ func (p *Client) do(req *http.Request, v interface{}) (*http.Response, error) {
 	}
 
 	if resp.StatusCode == 401 {
-		return resp, &types.Error{
+		return resp, &lib.Error{
 			Status:  resp.Status,
 			Message: "Unauthorized",
 		}
@@ -163,14 +163,14 @@ func (p *Client) do(req *http.Request, v interface{}) (*http.Response, error) {
 			_ = resp.Body.Close()
 		}()
 
-		apiError := new(types.Error)
+		apiError := new(lib.Error)
 
 		err = json.NewDecoder(resp.Body).Decode(apiError)
 		if err != nil {
 			return resp, err
 		}
 
-		return resp, &types.Error{
+		return resp, &lib.Error{
 			Status:  resp.Status,
 			Message: apiError.Message,
 		}

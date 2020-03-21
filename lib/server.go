@@ -1,4 +1,4 @@
-package types
+package lib
 
 // Server structure with JSON API metadata
 type Server struct {

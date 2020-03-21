@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/joeig/go-powerdns/v2/types"
+	"github.com/joeig/go-powerdns/v2/lib"
 )
 
 func randomString(length int) string {
@@ -29,7 +29,7 @@ func generateTestRecord(client *Client, domain string, autoAddRecord bool) strin
 	name := fmt.Sprintf("test-%s.%s", randomString(16), domain)
 
 	if mock.Disabled() && autoAddRecord {
-		if err := client.Records.Add(domain, name, types.RRTypeTXT, 300, []string{"\"Testing...\""}); err != nil {
+		if err := client.Records.Add(domain, name, lib.RRTypeTXT, 300, []string{"\"Testing...\""}); err != nil {
 			fmt.Printf("Error creating record: %s\n", name)
 			fmt.Printf("%s\n", err)
 		} else {
@@ -47,12 +47,12 @@ func TestAddRecord(t *testing.T) {
 	mock.RegisterRecordMockResponder(testDomain)
 
 	testRecordNameTXT := generateTestRecord(p, testDomain, false)
-	if err := p.Records.Add(testDomain, testRecordNameTXT, types.RRTypeTXT, 300, []string{"\"bar\""}); err != nil {
+	if err := p.Records.Add(testDomain, testRecordNameTXT, lib.RRTypeTXT, 300, []string{"\"bar\""}); err != nil {
 		t.Errorf("%s", err)
 	}
 
 	testRecordNameCNAME := generateTestRecord(p, testDomain, false)
-	if err := p.Records.Add(testDomain, testRecordNameCNAME, types.RRTypeCNAME, 300, []string{"foo.tld"}); err != nil {
+	if err := p.Records.Add(testDomain, testRecordNameCNAME, lib.RRTypeCNAME, 300, []string{"foo.tld"}); err != nil {
 		t.Errorf("%s", err)
 	}
 }
@@ -63,7 +63,7 @@ func TestAddRecordError(t *testing.T) {
 	testDomain := generateTestZone(false)
 
 	testRecordName := generateTestRecord(p, testDomain, false)
-	if err := p.Records.Add(testDomain, testRecordName, types.RRTypeTXT, 300, []string{"\"bar\""}); err == nil {
+	if err := p.Records.Add(testDomain, testRecordName, lib.RRTypeTXT, 300, []string{"\"bar\""}); err == nil {
 		t.Error("error is nil")
 	}
 }
@@ -75,7 +75,7 @@ func TestChangeRecord(t *testing.T) {
 	mock.RegisterRecordMockResponder(testDomain)
 
 	testRecordName := generateTestRecord(p, testDomain, true)
-	if err := p.Records.Change(testDomain, testRecordName, types.RRTypeTXT, 300, []string{"\"bar\""}); err != nil {
+	if err := p.Records.Change(testDomain, testRecordName, lib.RRTypeTXT, 300, []string{"\"bar\""}); err != nil {
 		t.Errorf("%s", err)
 	}
 }
@@ -86,7 +86,7 @@ func TestChangeRecordError(t *testing.T) {
 	testDomain := generateTestZone(false)
 
 	testRecordName := generateTestRecord(p, testDomain, false)
-	if err := p.Records.Change(testDomain, testRecordName, types.RRTypeTXT, 300, []string{"\"bar\""}); err == nil {
+	if err := p.Records.Change(testDomain, testRecordName, lib.RRTypeTXT, 300, []string{"\"bar\""}); err == nil {
 		t.Error("error is nil")
 	}
 }
@@ -97,7 +97,7 @@ func TestDeleteRecord(t *testing.T) {
 	mock.RegisterRecordMockResponder(testDomain)
 
 	testRecordName := generateTestRecord(p, testDomain, true)
-	if err := p.Records.Delete(testDomain, testRecordName, types.RRTypeTXT); err != nil {
+	if err := p.Records.Delete(testDomain, testRecordName, lib.RRTypeTXT); err != nil {
 		t.Errorf("%s", err)
 	}
 }
@@ -108,19 +108,19 @@ func TestDeleteRecordError(t *testing.T) {
 	testDomain := generateTestZone(false)
 
 	testRecordName := generateTestRecord(p, testDomain, false)
-	if err := p.Records.Delete(testDomain, testRecordName, types.RRTypeTXT); err == nil {
+	if err := p.Records.Delete(testDomain, testRecordName, lib.RRTypeTXT); err == nil {
 		t.Error("error is nil")
 	}
 }
 
 func TestCanonicalResourceRecordValues(t *testing.T) {
 	testCases := []struct {
-		records     []types.Record
+		records     []lib.Record
 		wantContent []string
 	}{
-		{[]types.Record{{Content: types.String("foo.tld")}}, []string{"foo.tld."}},
-		{[]types.Record{{Content: types.String("foo.tld.")}}, []string{"foo.tld."}},
-		{[]types.Record{{Content: types.String("foo.tld")}, {Content: types.String("foo.tld.")}}, []string{"foo.tld.", "foo.tld."}},
+		{[]lib.Record{{Content: lib.String("foo.tld")}}, []string{"foo.tld."}},
+		{[]lib.Record{{Content: lib.String("foo.tld.")}}, []string{"foo.tld."}},
+		{[]lib.Record{{Content: lib.String("foo.tld")}, {Content: lib.String("foo.tld.")}}, []string{"foo.tld.", "foo.tld."}},
 	}
 
 	for i, tc := range testCases {
@@ -143,12 +143,12 @@ func TestCanonicalResourceRecordValues(t *testing.T) {
 
 func TestFixRRset(t *testing.T) {
 	testCases := []struct {
-		rrset                     types.RRset
+		rrset                     lib.RRset
 		wantFixedCanonicalRecords bool
 	}{
-		{types.RRset{Type: types.RRTypePtr(types.RRTypeMX), Records: []types.Record{{Content: types.String("foo.tld")}}}, true},
-		{types.RRset{Type: types.RRTypePtr(types.RRTypeCNAME), Records: []types.Record{{Content: types.String("foo.tld")}}}, true},
-		{types.RRset{Type: types.RRTypePtr(types.RRTypeA), Records: []types.Record{{Content: types.String("foo.tld")}}}, false},
+		{lib.RRset{Type: lib.RRTypePtr(lib.RRTypeMX), Records: []lib.Record{{Content: lib.String("foo.tld")}}}, true},
+		{lib.RRset{Type: lib.RRTypePtr(lib.RRTypeCNAME), Records: []lib.Record{{Content: lib.String("foo.tld")}}}, true},
+		{lib.RRset{Type: lib.RRTypePtr(lib.RRTypeA), Records: []lib.Record{{Content: lib.String("foo.tld")}}}, false},
 	}
 
 	for i, tc := range testCases {
@@ -160,7 +160,7 @@ func TestFixRRset(t *testing.T) {
 			if tc.wantFixedCanonicalRecords {
 				for j := range tc.rrset.Records {
 					isContent := *tc.rrset.Records[j].Content
-					wantContent := types.MakeDomainCanonical(*tc.rrset.Records[j].Content)
+					wantContent := lib.MakeDomainCanonical(*tc.rrset.Records[j].Content)
 
 					if isContent != wantContent {
 						t.Errorf("Comparison failed: %s != %s", isContent, wantContent)
@@ -169,7 +169,7 @@ func TestFixRRset(t *testing.T) {
 			} else {
 				for j := range tc.rrset.Records {
 					isContent := *tc.rrset.Records[j].Content
-					wrongContent := types.MakeDomainCanonical(*tc.rrset.Records[j].Content)
+					wrongContent := lib.MakeDomainCanonical(*tc.rrset.Records[j].Content)
 
 					if isContent == wrongContent {
 						t.Errorf("Comparison failed: %s == %s", isContent, wrongContent)
