@@ -158,12 +158,12 @@ func TestChangeZone(t *testing.T) {
 	p := initialisePowerDNSTestClient(&mock)
 
 	t.Run("ChangeValidZone", func(t *testing.T) {
-		if err := p.Zones.Change(testDomain, &lib.Zone{Nameservers: []string{"ns23.foo.tld."}}); err != nil {
+		if err := p.Zones.Change(testDomain, &lib.Zone{Nameservers: lib.StringSlicePtr([]string{"ns23.foo.tld."})}); err != nil {
 			t.Errorf("%s", err)
 		}
 	})
 	t.Run("ChangeInvalidZone", func(t *testing.T) {
-		if err := p.Zones.Change("doesnt-exist", &lib.Zone{Nameservers: []string{"ns23.foo.tld."}}); err == nil {
+		if err := p.Zones.Change("doesnt-exist", &lib.Zone{Nameservers: lib.StringSlicePtr([]string{"ns23.foo.tld."})}); err == nil {
 			t.Errorf("Changing an invalid zone does not return an error")
 		}
 	})
@@ -174,7 +174,7 @@ func TestChangeZoneError(t *testing.T) {
 	p := initialisePowerDNSTestClient(&mock)
 	p.Port = "x"
 
-	if err := p.Zones.Change(testDomain, &lib.Zone{Nameservers: []string{"ns23.foo.tld."}}); err == nil {
+	if err := p.Zones.Change(testDomain, &lib.Zone{Nameservers: lib.StringSlicePtr([]string{"ns23.foo.tld."})}); err == nil {
 		t.Error("error is nil")
 	}
 }

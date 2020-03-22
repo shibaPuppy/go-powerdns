@@ -15,14 +15,14 @@ func randomString(length int) string {
 		panic(err)
 	}
 
-	characters := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	characters := "abcdefghijklmnopqrstuvwxyz0123456789"
 
 	for i, b := range bytes {
-		character := b % byte(len(characters))
+		character := characters[b%byte(len(characters))]
 		bytes[i] = character
 	}
 
-	return characters
+	return string(bytes)
 }
 
 func generateTestRecord(client *Client, domain string, autoAddRecord bool) string {

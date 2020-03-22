@@ -56,7 +56,7 @@ func (m *Mock) RegisterRecordMockResponder(testDomain string) {
 				return httpmock.NewBytesResponse(http.StatusBadRequest, []byte{}), nil
 			}
 
-			for _, set := range rrsets.Sets {
+			for _, set := range *rrsets.Sets {
 				if validateChangeType(*set.ChangeType) != nil {
 					log.Print("Invalid change type", *set.ChangeType)
 					return httpmock.NewBytesResponse(http.StatusBadRequest, []byte{}), nil
@@ -68,7 +68,7 @@ func (m *Mock) RegisterRecordMockResponder(testDomain string) {
 				}
 
 				if *set.Type == lib.RRTypeCNAME || *set.Type == lib.RRTypeMX {
-					for _, record := range set.Records {
+					for _, record := range *set.Records {
 						if validateCNAMEContent(*record.Content) != nil {
 							log.Print("CNAME content validation failed")
 							return httpmock.NewBytesResponse(http.StatusBadRequest, []byte{}), nil
@@ -78,8 +78,8 @@ func (m *Mock) RegisterRecordMockResponder(testDomain string) {
 			}
 
 			zoneMock := lib.Zone{
-				Name: lib.String(lib.MakeDomainCanonical(testDomain)),
-				URL:  lib.String("/api/v1/servers/" + m.TestVHost + "/zones/" + lib.MakeDomainCanonical(testDomain)),
+				Name: lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
+				URL:  lib.StringPtr("/api/v1/servers/" + m.TestVHost + "/zones/" + lib.MakeDomainCanonical(testDomain)),
 			}
 			return httpmock.NewJsonResponse(http.StatusOK, zoneMock)
 		},

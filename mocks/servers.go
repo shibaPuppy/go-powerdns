@@ -18,13 +18,13 @@ func (m *Mock) RegisterServersMockResponders() {
 
 			serversMock := []lib.Server{
 				{
-					Type:       lib.String("Server"),
-					ID:         lib.String(m.TestVHost),
-					DaemonType: lib.String("authoritative"),
-					Version:    lib.String("4.1.2"),
-					URL:        lib.String("/api/v1/servers/" + m.TestVHost),
-					ConfigURL:  lib.String("/api/v1/servers/" + m.TestVHost + "/config{/config_setting}"),
-					ZonesURL:   lib.String("/api/v1/servers/" + m.TestVHost + "/zones{/zone}"),
+					Type:       lib.StringPtr("Server"),
+					ID:         lib.StringPtr(m.TestVHost),
+					DaemonType: lib.StringPtr("authoritative"),
+					Version:    lib.StringPtr("4.1.2"),
+					URL:        lib.StringPtr("/api/v1/servers/" + m.TestVHost),
+					ConfigURL:  lib.StringPtr("/api/v1/servers/" + m.TestVHost + "/config{/config_setting}"),
+					ZonesURL:   lib.StringPtr("/api/v1/servers/" + m.TestVHost + "/zones{/zone}"),
 				},
 			}
 			return httpmock.NewJsonResponse(http.StatusOK, serversMock)
@@ -38,13 +38,13 @@ func (m *Mock) RegisterServersMockResponders() {
 			}
 
 			serverMock := lib.Server{
-				Type:       lib.String("Server"),
-				ID:         lib.String(m.TestVHost),
-				DaemonType: lib.String("authoritative"),
-				Version:    lib.String("4.1.2"),
-				URL:        lib.String("/api/v1/servers/" + m.TestVHost),
-				ConfigURL:  lib.String("/api/v1/servers/" + m.TestVHost + "/config{/config_setting}"),
-				ZonesURL:   lib.String("/api/v1/servers/" + m.TestVHost + "/zones{/zone}"),
+				Type:       lib.StringPtr("Server"),
+				ID:         lib.StringPtr(m.TestVHost),
+				DaemonType: lib.StringPtr("authoritative"),
+				Version:    lib.StringPtr("4.1.2"),
+				URL:        lib.StringPtr("/api/v1/servers/" + m.TestVHost),
+				ConfigURL:  lib.StringPtr("/api/v1/servers/" + m.TestVHost + "/config{/config_setting}"),
+				ZonesURL:   lib.StringPtr("/api/v1/servers/" + m.TestVHost + "/zones{/zone}"),
 			}
 			return httpmock.NewJsonResponse(http.StatusOK, serverMock)
 		},
@@ -64,8 +64,8 @@ func (m *Mock) RegisterCacheFlushMockResponder(testDomain string) {
 			}
 
 			cacheFlushResultMock := lib.CacheFlushResult{
-				Count:  lib.Uint32(1),
-				Result: lib.String("foo"),
+				Count:  lib.Uint32Ptr(1),
+				Result: lib.StringPtr("foo"),
 			}
 			return httpmock.NewJsonResponse(http.StatusOK, cacheFlushResultMock)
 		},

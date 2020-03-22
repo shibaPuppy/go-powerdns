@@ -21,11 +21,11 @@ func (r *RecordsService) Change(domain string, name string, recordType lib.RRTyp
 	rrset.Type = &recordType
 	rrset.TTL = &ttl
 	rrset.ChangeType = lib.ChangeTypePtr(lib.ChangeTypeReplace)
-	rrset.Records = make([]lib.Record, 0)
+	rrset.Records = lib.RecordSlicePtr(make([]lib.Record, 0))
 
 	for _, c := range content {
-		r := lib.Record{Content: lib.String(c), Disabled: lib.Bool(false), SetPTR: lib.Bool(false)}
-		rrset.Records = append(rrset.Records, r)
+		r := lib.Record{Content: lib.StringPtr(c), Disabled: lib.BoolPtr(false), SetPTR: lib.BoolPtr(false)}
+		*rrset.Records = append(*rrset.Records, r)
 	}
 
 	return r.patchRRset(domain, *rrset)
@@ -42,12 +42,15 @@ func (r *RecordsService) Delete(domain string, name string, recordType lib.RRTyp
 }
 
 func (r *RecordsService) patchRRset(domain string, rrset lib.RRset) error {
-	rrset.Name = lib.String(lib.MakeDomainCanonical(*rrset.Name))
+	rrset.Name = lib.StringPtr(lib.MakeDomainCanonical(*rrset.Name))
 
 	lib.FixRRset(&rrset)
 
-	payload := lib.RRsets{}
-	payload.Sets = append(payload.Sets, rrset)
+	payload := lib.RRsets{
+		Sets: lib.RRsetSlicePtr([]lib.RRset{
+			rrset,
+		}),
+	}
 
 	req, err := r.client.newRequest("PATCH", fmt.Sprintf("servers/%s/zones/%s", r.client.VHost, lib.TrimDomain(domain)), nil, payload)
 	if err != nil {

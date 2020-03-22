@@ -7,10 +7,10 @@ type Zone struct {
 	Type             *ZoneType `json:"type,omitempty"`
 	URL              *string   `json:"url,omitempty"`
 	Kind             *ZoneKind `json:"kind,omitempty"`
-	RRsets           []RRset   `json:"rrsets,omitempty"`
+	RRsets           *[]RRset  `json:"rrsets,omitempty"`
 	Serial           *uint32   `json:"serial,omitempty"`
 	NotifiedSerial   *uint32   `json:"notified_serial,omitempty"`
-	Masters          []string  `json:"masters,omitempty"`
+	Masters          *[]string `json:"masters,omitempty"`
 	DNSsec           *bool     `json:"dnssec,omitempty"`
 	Nsec3Param       *string   `json:"nsec3param,omitempty"`
 	Nsec3Narrow      *bool     `json:"nsec3narrow,omitempty"`
@@ -20,9 +20,9 @@ type Zone struct {
 	APIRectify       *bool     `json:"api_rectify,omitempty"`
 	Zone             *string   `json:"zone,omitempty"`
 	Account          *string   `json:"account,omitempty"`
-	Nameservers      []string  `json:"nameservers,omitempty"`
-	MasterTSIGKeyIDs []string  `json:"master_tsig_key_ids,omitempty"`
-	SlaveTSIGKeyIDs  []string  `json:"slave_tsig_key_ids,omitempty"`
+	Nameservers      *[]string `json:"nameservers,omitempty"`
+	MasterTSIGKeyIDs *[]string `json:"master_tsig_key_ids,omitempty"`
+	SlaveTSIGKeyIDs  *[]string `json:"slave_tsig_key_ids,omitempty"`
 }
 
 // NotifyResult structure with JSON API metadata

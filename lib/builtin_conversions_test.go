@@ -2,10 +2,10 @@ package lib
 
 import "testing"
 
-func TestBool(t *testing.T) {
+func TestBoolPtr(t *testing.T) {
 	source := true
 
-	if *Bool(source) != source {
+	if *BoolPtr(source) != source {
 		t.Error("Invalid return value")
 	}
 }
@@ -22,10 +22,10 @@ func TestBoolValue(t *testing.T) {
 	}
 }
 
-func TestUint32(t *testing.T) {
+func TestUint32Ptr(t *testing.T) {
 	source := uint32(1337)
 
-	if *Uint32(source) != source {
+	if *Uint32Ptr(source) != source {
 		t.Error("Invalid return value")
 	}
 }
@@ -42,10 +42,10 @@ func TestUint32Value(t *testing.T) {
 	}
 }
 
-func TestUint64(t *testing.T) {
+func TestUint64Ptr(t *testing.T) {
 	source := uint64(1337)
 
-	if *Uint64(source) != source {
+	if *Uint64Ptr(source) != source {
 		t.Error("Invalid return value")
 	}
 }
@@ -62,10 +62,10 @@ func TestUint64Value(t *testing.T) {
 	}
 }
 
-func TestString(t *testing.T) {
+func TestStringPtr(t *testing.T) {
 	source := "foo"
 
-	if *String(source) != source {
+	if *StringPtr(source) != source {
 		t.Error("Invalid return value")
 	}
 }
@@ -79,5 +79,12 @@ func TestStringValue(t *testing.T) {
 
 	if StringValue(nil) != "" {
 		t.Error("Unexpected return value")
+	}
+}
+
+func TestStringSlicePtr(t *testing.T) {
+	source := []string{"foo"}
+	if (*StringSlicePtr(source))[0] != source[0] {
+		t.Error("Invalid return value")
 	}
 }

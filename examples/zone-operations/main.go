@@ -45,8 +45,8 @@ func main() {
 
 	// Change a zone
 	zoneChangeSet := &lib.Zone{
-		Account: lib.String("test"),
-		DNSsec:  lib.Bool(true),
+		Account: lib.StringPtr("test"),
+		DNSsec:  lib.BoolPtr(true),
 	}
 
 	err = pdns.Zones.Change(domain, zoneChangeSet)

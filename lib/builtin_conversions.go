@@ -1,7 +1,7 @@
 package lib
 
-// Bool is a helper function that allocates a new bool value to store v and returns a pointer to it.
-func Bool(v bool) *bool {
+// BoolPtr is a helper function that allocates a new bool value to store v and returns a pointer to it.
+func BoolPtr(v bool) *bool {
 	return &v
 }
 
@@ -14,8 +14,8 @@ func BoolValue(v *bool) bool {
 	return false
 }
 
-// Uint32 is a helper function that allocates a new uint32 value to store v and returns a pointer to it.
-func Uint32(v uint32) *uint32 {
+// Uint32Ptr is a helper function that allocates a new uint32 value to store v and returns a pointer to it.
+func Uint32Ptr(v uint32) *uint32 {
 	return &v
 }
 
@@ -28,8 +28,8 @@ func Uint32Value(v *uint32) uint32 {
 	return 0
 }
 
-// Uint64 is a helper function that allocates a new uint64 value to store v and returns a pointer to it.
-func Uint64(v uint64) *uint64 {
+// Uint64Ptr is a helper function that allocates a new uint64 value to store v and returns a pointer to it.
+func Uint64Ptr(v uint64) *uint64 {
 	return &v
 }
 
@@ -42,8 +42,8 @@ func Uint64Value(v *uint64) uint64 {
 	return 0
 }
 
-// String is a helper function that allocates a new string value to store v and returns a pointer to it.
-func String(v string) *string {
+// StringPtr is a helper function that allocates a new string value to store v and returns a pointer to it.
+func StringPtr(v string) *string {
 	return &v
 }
 
@@ -54,4 +54,9 @@ func StringValue(v *string) string {
 	}
 
 	return ""
+}
+
+// StringSlicePtr is a helper function that allocates a new string slice value to store v and returns a pointer to it.
+func StringSlicePtr(v []string) *[]string {
+	return &v
 }

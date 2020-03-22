@@ -39,15 +39,15 @@ func (z *ZonesService) Get(domain string) (*lib.Zone, error) {
 // AddNative creates a new native zone
 func (z *ZonesService) AddNative(domain string, dnssec bool, nsec3Param string, nsec3Narrow bool, soaEdit, soaEditAPI string, apiRectify bool, nameservers []string) (*lib.Zone, error) {
 	zone := lib.Zone{
-		Name:        lib.String(domain),
+		Name:        lib.StringPtr(domain),
 		Kind:        lib.ZoneKindPtr(lib.NativeZoneKind),
-		DNSsec:      lib.Bool(dnssec),
-		Nsec3Param:  lib.String(nsec3Param),
-		Nsec3Narrow: lib.Bool(nsec3Narrow),
-		SOAEdit:     lib.String(soaEdit),
-		SOAEditAPI:  lib.String(soaEditAPI),
-		APIRectify:  lib.Bool(apiRectify),
-		Nameservers: nameservers,
+		DNSsec:      lib.BoolPtr(dnssec),
+		Nsec3Param:  lib.StringPtr(nsec3Param),
+		Nsec3Narrow: lib.BoolPtr(nsec3Narrow),
+		SOAEdit:     lib.StringPtr(soaEdit),
+		SOAEditAPI:  lib.StringPtr(soaEditAPI),
+		APIRectify:  lib.BoolPtr(apiRectify),
+		Nameservers: lib.StringSlicePtr(nameservers),
 	}
 
 	return z.postZone(&zone)
@@ -56,15 +56,15 @@ func (z *ZonesService) AddNative(domain string, dnssec bool, nsec3Param string, 
 // AddMaster creates a new master zone
 func (z *ZonesService) AddMaster(domain string, dnssec bool, nsec3Param string, nsec3Narrow bool, soaEdit, soaEditAPI string, apiRectify bool, nameservers []string) (*lib.Zone, error) {
 	zone := lib.Zone{
-		Name:        lib.String(domain),
+		Name:        lib.StringPtr(domain),
 		Kind:        lib.ZoneKindPtr(lib.MasterZoneKind),
-		DNSsec:      lib.Bool(dnssec),
-		Nsec3Param:  lib.String(nsec3Param),
-		Nsec3Narrow: lib.Bool(nsec3Narrow),
-		SOAEdit:     lib.String(soaEdit),
-		SOAEditAPI:  lib.String(soaEditAPI),
-		APIRectify:  lib.Bool(apiRectify),
-		Nameservers: nameservers,
+		DNSsec:      lib.BoolPtr(dnssec),
+		Nsec3Param:  lib.StringPtr(nsec3Param),
+		Nsec3Narrow: lib.BoolPtr(nsec3Narrow),
+		SOAEdit:     lib.StringPtr(soaEdit),
+		SOAEditAPI:  lib.StringPtr(soaEditAPI),
+		APIRectify:  lib.BoolPtr(apiRectify),
+		Nameservers: lib.StringSlicePtr(nameservers),
 	}
 
 	return z.postZone(&zone)
@@ -73,16 +73,16 @@ func (z *ZonesService) AddMaster(domain string, dnssec bool, nsec3Param string, 
 // AddSlave creates a new slave zone
 func (z *ZonesService) AddSlave(domain string, masters []string) (*lib.Zone, error) {
 	zone := lib.Zone{
-		Name:    lib.String(domain),
+		Name:    lib.StringPtr(domain),
 		Kind:    lib.ZoneKindPtr(lib.SlaveZoneKind),
-		Masters: masters,
+		Masters: lib.StringSlicePtr(masters),
 	}
 
 	return z.postZone(&zone)
 }
 
 func (z *ZonesService) postZone(zone *lib.Zone) (*lib.Zone, error) {
-	zone.Name = lib.String(lib.MakeDomainCanonical(*zone.Name))
+	zone.Name = lib.StringPtr(lib.MakeDomainCanonical(*zone.Name))
 	zone.Type = lib.ZoneTypePtr(lib.ZoneZoneType)
 
 	req, err := z.client.newRequest("POST", fmt.Sprintf("servers/%s/zones", z.client.VHost), nil, zone)

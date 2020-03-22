@@ -17,9 +17,9 @@ func (m *Mock) RegisterConfigsMockResponder() {
 
 			configMock := []lib.ConfigSetting{
 				{
-					Name:  lib.String("signing-threads"),
-					Type:  lib.String("ConfigSetting"),
-					Value: lib.String("3"),
+					Name:  lib.StringPtr("signing-threads"),
+					Type:  lib.StringPtr("ConfigSetting"),
+					Value: lib.StringPtr("3"),
 				},
 			}
 			return httpmock.NewJsonResponse(http.StatusOK, configMock)

@@ -18,27 +18,27 @@ func (m *Mock) RegisterCryptokeysMockResponder(testDomain string) {
 
 			cryptokeysMock := []lib.Cryptokey{
 				{
-					Type:      lib.String("Cryptokey"),
-					ID:        lib.Uint64(11),
-					KeyType:   lib.String("zsk"),
-					Active:    lib.Bool(true),
-					DNSkey:    lib.String("256 3 8 thisIsTheKey"),
-					Algorithm: lib.String("ECDSAP256SHA256"),
-					Bits:      lib.Uint64(1024),
+					Type:      lib.StringPtr("Cryptokey"),
+					ID:        lib.Uint64Ptr(11),
+					KeyType:   lib.StringPtr("zsk"),
+					Active:    lib.BoolPtr(true),
+					DNSkey:    lib.StringPtr("256 3 8 thisIsTheKey"),
+					Algorithm: lib.StringPtr("ECDSAP256SHA256"),
+					Bits:      lib.Uint64Ptr(1024),
 				},
 				{
-					Type:    lib.String("Cryptokey"),
-					ID:      lib.Uint64(10),
-					KeyType: lib.String("lsk"),
-					Active:  lib.Bool(true),
-					DNSkey:  lib.String("257 3 8 thisIsTheKey"),
-					DS: []string{
+					Type:    lib.StringPtr("Cryptokey"),
+					ID:      lib.Uint64Ptr(10),
+					KeyType: lib.StringPtr("lsk"),
+					Active:  lib.BoolPtr(true),
+					DNSkey:  lib.StringPtr("257 3 8 thisIsTheKey"),
+					DS: lib.StringSlicePtr([]string{
 						"997 8 1 foo",
 						"997 8 2 foo",
 						"997 8 4 foo",
-					},
-					Algorithm: lib.String("ECDSAP256SHA256"),
-					Bits:      lib.Uint64(2048),
+					}),
+					Algorithm: lib.StringPtr("ECDSAP256SHA256"),
+					Bits:      lib.Uint64Ptr(2048),
 				},
 			}
 			return httpmock.NewJsonResponse(http.StatusOK, cryptokeysMock)
@@ -55,14 +55,14 @@ func (m *Mock) RegisterCryptokeyMockResponders(testDomain string, id uint64) {
 			}
 
 			cryptokeyMock := lib.Cryptokey{
-				Type:       lib.String("Cryptokey"),
-				ID:         lib.Uint64(0),
-				KeyType:    lib.String("zsk"),
-				Active:     lib.Bool(true),
-				DNSkey:     lib.String("256 3 8 thisIsTheKey"),
-				Privatekey: lib.String("Private-key-format: v1.2\nAlgorithm: 8 (ECDSAP256SHA256)\nModulus: foo\nPublicExponent: foo\nPrivateExponent: foo\nPrime1: foo\nPrime2: foo\nExponent1: foo\nExponent2: foo\nCoefficient: foo\n"),
-				Algorithm:  lib.String("ECDSAP256SHA256"),
-				Bits:       lib.Uint64(1024),
+				Type:       lib.StringPtr("Cryptokey"),
+				ID:         lib.Uint64Ptr(0),
+				KeyType:    lib.StringPtr("zsk"),
+				Active:     lib.BoolPtr(true),
+				DNSkey:     lib.StringPtr("256 3 8 thisIsTheKey"),
+				Privatekey: lib.StringPtr("Private-key-format: v1.2\nAlgorithm: 8 (ECDSAP256SHA256)\nModulus: foo\nPublicExponent: foo\nPrivateExponent: foo\nPrime1: foo\nPrime2: foo\nExponent1: foo\nExponent2: foo\nCoefficient: foo\n"),
+				Algorithm:  lib.StringPtr("ECDSAP256SHA256"),
+				Bits:       lib.Uint64Ptr(1024),
 			}
 			return httpmock.NewJsonResponse(http.StatusOK, cryptokeyMock)
 		},

@@ -6,8 +6,8 @@ type RRset struct {
 	Type       *RRType     `json:"type,omitempty"`
 	TTL        *uint32     `json:"ttl,omitempty"`
 	ChangeType *ChangeType `json:"changetype,omitempty"`
-	Records    []Record    `json:"records"`
-	Comments   []Comment   `json:"comments,omitempty"`
+	Records    *[]Record   `json:"records"`
+	Comments   *[]Comment  `json:"comments,omitempty"`
 }
 
 // Record structure with JSON API metadata
@@ -15,6 +15,11 @@ type Record struct {
 	Content  *string `json:"content,omitempty"`
 	Disabled *bool   `json:"disabled,omitempty"`
 	SetPTR   *bool   `json:"set-ptr,omitempty"`
+}
+
+// RecordSlicePtr is a helper function that allocates a new record slice to store v and returns a pointer to it.
+func RecordSlicePtr(v []Record) *[]Record {
+	return &v
 }
 
 // Comment structure with JSON API metadata
@@ -26,7 +31,12 @@ type Comment struct {
 
 // RRsets structure with JSON API metadata
 type RRsets struct {
-	Sets []RRset `json:"rrsets,omitempty"`
+	Sets *[]RRset `json:"rrsets,omitempty"`
+}
+
+// RRsetSlicePtr is a helper function that allocates a new RRset slice to store v and returns a pointer to it.
+func RRsetSlicePtr(v []RRset) *[]RRset {
+	return &v
 }
 
 // ChangeType represents a string-valued change type
@@ -127,7 +137,7 @@ const (
 
 func canonicalResourceRecordValues(records []Record) {
 	for i := range records {
-		records[i].Content = String(MakeDomainCanonical(*records[i].Content))
+		records[i].Content = StringPtr(MakeDomainCanonical(*records[i].Content))
 	}
 }
 
@@ -137,5 +147,5 @@ func FixRRset(rrset *RRset) {
 		return
 	}
 
-	canonicalResourceRecordValues(rrset.Records)
+	canonicalResourceRecordValues(*rrset.Records)
 }
