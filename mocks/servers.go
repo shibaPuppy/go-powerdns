@@ -24,6 +24,18 @@ func (m *Mock) generateTestAPIVHostCacheFlushURL() string {
 	return fmt.Sprintf("%s/%s/cache/flush", m.generateTestAPIServersURL(), m.TestVHost)
 }
 
+func (m *Mock) generateTestServer() *lib.Server {
+	return &lib.Server{
+		Type:       lib.StringPtr("Server"),
+		ID:         lib.StringPtr(m.TestVHost),
+		DaemonType: lib.StringPtr("authoritative"),
+		Version:    lib.StringPtr("4.1.2"),
+		URL:        lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s", m.TestVHost)),
+		ConfigURL:  lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/config{/config_setting}", m.TestVHost)),
+		ZonesURL:   lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/zones{/zone}", m.TestVHost)),
+	}
+}
+
 // RegisterServersMockResponders registers server mock responders
 func (m *Mock) RegisterServersMockResponders() {
 	httpmock.RegisterResponder("GET", m.generateTestAPIServersURL(),
@@ -32,18 +44,7 @@ func (m *Mock) RegisterServersMockResponders() {
 				return res, nil
 			}
 
-			serversMock := []lib.Server{
-				{
-					Type:       lib.StringPtr("Server"),
-					ID:         lib.StringPtr(m.TestVHost),
-					DaemonType: lib.StringPtr("authoritative"),
-					Version:    lib.StringPtr("4.1.2"),
-					URL:        lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s", m.TestVHost)),
-					ConfigURL:  lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/config{/config_setting}", m.TestVHost)),
-					ZonesURL:   lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/zones{/zone}", m.TestVHost)),
-				},
-			}
-			return httpmock.NewJsonResponse(http.StatusOK, serversMock)
+			return httpmock.NewJsonResponse(http.StatusOK, []lib.Server{*m.generateTestServer()})
 		},
 	)
 
@@ -53,16 +54,7 @@ func (m *Mock) RegisterServersMockResponders() {
 				return res, nil
 			}
 
-			serverMock := lib.Server{
-				Type:       lib.StringPtr("Server"),
-				ID:         lib.StringPtr(m.TestVHost),
-				DaemonType: lib.StringPtr("authoritative"),
-				Version:    lib.StringPtr("4.1.2"),
-				URL:        lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s", m.TestVHost)),
-				ConfigURL:  lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/config{/config_setting}", m.TestVHost)),
-				ZonesURL:   lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/zones{/zone}", m.TestVHost)),
-			}
-			return httpmock.NewJsonResponse(http.StatusOK, serverMock)
+			return httpmock.NewJsonResponse(http.StatusOK, *m.generateTestServer())
 		},
 	)
 }

@@ -2,7 +2,6 @@ package mocks
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"regexp"
@@ -78,10 +77,8 @@ func (m *Mock) RegisterRecordMockResponder(testDomain string) {
 				}
 			}
 
-			zoneMock := lib.Zone{
-				Name: lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
-				URL:  lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/zones/%s", m.TestVHost, lib.MakeDomainCanonical(testDomain))),
-			}
+			zoneMock := m.generateTestZone(testDomain, lib.NativeZoneKind)
+
 			return httpmock.NewJsonResponse(http.StatusOK, zoneMock)
 		},
 	)

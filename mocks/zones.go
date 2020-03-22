@@ -44,6 +44,25 @@ func validateZoneKind(zoneKind lib.ZoneKind) error {
 	return nil
 }
 
+func (m *Mock) generateTestZone(testDomain string, zoneKind lib.ZoneKind) *lib.Zone {
+	return &lib.Zone{
+		ID:             lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
+		Name:           lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
+		Type:           lib.ZoneTypePtr(lib.ZoneZoneType),
+		URL:            lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/zones/%s", m.TestVHost, lib.MakeDomainCanonical(testDomain))),
+		Kind:           lib.ZoneKindPtr(zoneKind),
+		Serial:         lib.Uint32Ptr(1337),
+		NotifiedSerial: lib.Uint32Ptr(1337),
+		DNSsec:         lib.BoolPtr(true),
+		Nsec3Param:     lib.StringPtr(""),
+		Nsec3Narrow:    lib.BoolPtr(false),
+		SOAEdit:        lib.StringPtr(""),
+		SOAEditAPI:     lib.StringPtr("DEFAULT"),
+		APIRectify:     lib.BoolPtr(true),
+		Account:        lib.StringPtr(""),
+	}
+}
+
 // RegisterZonesMockResponder registers a zones mock responder
 func (m *Mock) RegisterZonesMockResponder() {
 	httpmock.RegisterResponder("GET", m.generateTestAPIZonesURL(),
@@ -58,17 +77,7 @@ func (m *Mock) RegisterZonesMockResponder() {
 			}
 
 			testDomain := "example.com"
-			zonesMock := []lib.Zone{
-				{
-					ID:             lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
-					Name:           lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
-					URL:            lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/zones/%s", m.TestVHost, lib.MakeDomainCanonical(testDomain))),
-					Kind:           lib.ZoneKindPtr(lib.NativeZoneKind),
-					Serial:         lib.Uint32Ptr(1337),
-					NotifiedSerial: lib.Uint32Ptr(1337),
-				},
-			}
-			return httpmock.NewJsonResponse(http.StatusOK, zonesMock)
+			return httpmock.NewJsonResponse(http.StatusOK, []lib.Zone{*m.generateTestZone(testDomain, lib.NativeZoneKind)})
 		},
 	)
 }
@@ -86,26 +95,20 @@ func (m *Mock) RegisterZoneMockResponders(testDomain string, zoneKind lib.ZoneKi
 				return httpmock.NewBytesResponse(http.StatusBadRequest, []byte{}), nil
 			}
 
-			zoneMock := lib.Zone{
-				ID:   lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
-				Name: lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
-				URL:  lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/zones/%s", m.TestVHost, lib.MakeDomainCanonical(testDomain))),
-				Kind: lib.ZoneKindPtr(lib.NativeZoneKind),
-				RRsets: lib.RRsetSlicePtr([]lib.RRset{
-					{
-						Name: lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
-						Type: lib.RRTypePtr(lib.RRTypeSOA),
-						TTL:  lib.Uint32Ptr(3600),
-						Records: lib.RecordSlicePtr([]lib.Record{
-							{
-								Content: lib.StringPtr("a.misconfigured.powerdns.server. hostmaster." + lib.MakeDomainCanonical(testDomain) + " 1337 10800 3600 604800 3600"),
-							},
-						}),
-					},
-				}),
-				Serial:         lib.Uint32Ptr(1337),
-				NotifiedSerial: lib.Uint32Ptr(1337),
-			}
+			zoneMock := *m.generateTestZone(testDomain, lib.NativeZoneKind)
+			zoneMock.RRsets = lib.RRsetSlicePtr([]lib.RRset{
+				{
+					Name: lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
+					Type: lib.RRTypePtr(lib.RRTypeSOA),
+					TTL:  lib.Uint32Ptr(3600),
+					Records: lib.RecordSlicePtr([]lib.Record{
+						{
+							Content: lib.StringPtr("a.misconfigured.powerdns.server. hostmaster." + lib.MakeDomainCanonical(testDomain) + " 1337 10800 3600 604800 3600"),
+						},
+					}),
+				},
+			})
+
 			return httpmock.NewJsonResponse(http.StatusOK, zoneMock)
 		},
 	)
@@ -137,66 +140,39 @@ func (m *Mock) RegisterZoneMockResponders(testDomain string, zoneKind lib.ZoneKi
 				return httpmock.NewStringResponse(http.StatusUnprocessableEntity, "Unprocessable Entity"), nil
 			}
 
-			var zoneMock lib.Zone
+			zoneMock := *m.generateTestZone(testDomain, zoneKind)
+
 			switch zoneKind {
 			case lib.NativeZoneKind, lib.MasterZoneKind:
-				zoneMock = lib.Zone{
-					ID:   lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
-					Name: lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
-					Type: lib.ZoneTypePtr(lib.ZoneZoneType),
-					URL:  lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/zones/%s", m.TestVHost, lib.MakeDomainCanonical(testDomain))),
-					Kind: lib.ZoneKindPtr(zoneKind),
-					RRsets: lib.RRsetSlicePtr([]lib.RRset{
-						{
-							Name: lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
-							Type: lib.RRTypePtr(lib.RRTypeSOA),
-							TTL:  lib.Uint32Ptr(3600),
-							Records: lib.RecordSlicePtr([]lib.Record{
-								{
-									Content:  lib.StringPtr("a.misconfigured.powerdns.server. hostmaster." + lib.MakeDomainCanonical(testDomain) + " 0 10800 3600 604800 3600"),
-									Disabled: lib.BoolPtr(false),
-								},
-							}),
-						},
-						{
-							Name: lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
-							Type: lib.RRTypePtr(lib.RRTypeNS),
-							TTL:  lib.Uint32Ptr(3600),
-							Records: lib.RecordSlicePtr([]lib.Record{
-								{
-									Content:  lib.StringPtr("ns.example.tld."),
-									Disabled: lib.BoolPtr(false),
-								},
-							}),
-						},
-					}),
-					Serial:      lib.Uint32Ptr(0),
-					Masters:     lib.StringSlicePtr([]string{}),
-					DNSsec:      lib.BoolPtr(true),
-					Nsec3Param:  lib.StringPtr(""),
-					Nsec3Narrow: lib.BoolPtr(false),
-					SOAEdit:     lib.StringPtr("foo"),
-					SOAEditAPI:  lib.StringPtr("foo"),
-					APIRectify:  lib.BoolPtr(true),
-					Account:     lib.StringPtr(""),
-				}
+				zoneMock.RRsets = lib.RRsetSlicePtr([]lib.RRset{
+					{
+						Name: lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
+						Type: lib.RRTypePtr(lib.RRTypeSOA),
+						TTL:  lib.Uint32Ptr(3600),
+						Records: lib.RecordSlicePtr([]lib.Record{
+							{
+								Content:  lib.StringPtr("a.misconfigured.powerdns.server. hostmaster." + lib.MakeDomainCanonical(testDomain) + " 0 10800 3600 604800 3600"),
+								Disabled: lib.BoolPtr(false),
+							},
+						}),
+					},
+					{
+						Name: lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
+						Type: lib.RRTypePtr(lib.RRTypeNS),
+						TTL:  lib.Uint32Ptr(3600),
+						Records: lib.RecordSlicePtr([]lib.Record{
+							{
+								Content:  lib.StringPtr("ns.example.tld."),
+								Disabled: lib.BoolPtr(false),
+							},
+						}),
+					},
+				})
+				zoneMock.Masters = lib.StringSlicePtr([]string{})
+
 			case lib.SlaveZoneKind:
-				zoneMock = lib.Zone{
-					ID:          lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
-					Name:        lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
-					Type:        lib.ZoneTypePtr(lib.ZoneZoneType),
-					URL:         lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/zones/%s", m.TestVHost, lib.MakeDomainCanonical(testDomain))),
-					Kind:        lib.ZoneKindPtr(zoneKind),
-					Serial:      lib.Uint32Ptr(0),
-					Masters:     lib.StringSlicePtr([]string{"127.0.0.1"}),
-					DNSsec:      lib.BoolPtr(true),
-					Nsec3Param:  lib.StringPtr(""),
-					Nsec3Narrow: lib.BoolPtr(false),
-					SOAEdit:     lib.StringPtr(""),
-					SOAEditAPI:  lib.StringPtr("DEFAULT"),
-					APIRectify:  lib.BoolPtr(true),
-					Account:     lib.StringPtr(""),
-				}
+				zoneMock.Masters = lib.StringSlicePtr([]string{"127.0.0.1"})
+
 			default:
 				return httpmock.NewStringResponse(http.StatusUnprocessableEntity, "Unprocessable Entity"), nil
 			}
