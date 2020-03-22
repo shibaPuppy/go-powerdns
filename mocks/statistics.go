@@ -1,14 +1,19 @@
 package mocks
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/jarcoal/httpmock"
 )
 
+func (m *Mock) generateTestAPIVHostStatisticsURL() string {
+	return fmt.Sprintf("%s/%s/statistics", m.generateTestAPIServersURL(), m.TestVHost)
+}
+
 // RegisterStatisticsMockResponder registers a statistics mock responder
 func (m *Mock) RegisterStatisticsMockResponder() {
-	httpmock.RegisterResponder("GET", m.generateTestAPIVHostURL()+"/statistics",
+	httpmock.RegisterResponder("GET", m.generateTestAPIVHostStatisticsURL(),
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {
 				return res, nil

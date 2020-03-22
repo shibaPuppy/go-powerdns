@@ -8,9 +8,25 @@ import (
 	"github.com/joeig/go-powerdns/v2/lib"
 )
 
+func (m *Mock) generateTestAPIServersURL() string {
+	return fmt.Sprintf("%s/servers", m.generateTestAPIURL())
+}
+
+func (m *Mock) generateTestAPIVHostURL() string {
+	return fmt.Sprintf("%s/%s", m.generateTestAPIServersURL(), m.TestVHost)
+}
+
+func (m *Mock) generateTestAPICustomVHostURL(vHost string) string {
+	return fmt.Sprintf("%s/%s", m.generateTestAPIServersURL(), vHost)
+}
+
+func (m *Mock) generateTestAPIVHostCacheFlushURL() string {
+	return fmt.Sprintf("%s/%s/cache/flush", m.generateTestAPIServersURL(), m.TestVHost)
+}
+
 // RegisterServersMockResponders registers server mock responders
 func (m *Mock) RegisterServersMockResponders() {
-	httpmock.RegisterResponder("GET", m.generateTestAPIURL()+"/servers",
+	httpmock.RegisterResponder("GET", m.generateTestAPIServersURL(),
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {
 				return res, nil
@@ -22,9 +38,9 @@ func (m *Mock) RegisterServersMockResponders() {
 					ID:         lib.StringPtr(m.TestVHost),
 					DaemonType: lib.StringPtr("authoritative"),
 					Version:    lib.StringPtr("4.1.2"),
-					URL:        lib.StringPtr("/api/v1/servers/" + m.TestVHost),
-					ConfigURL:  lib.StringPtr("/api/v1/servers/" + m.TestVHost + "/config{/config_setting}"),
-					ZonesURL:   lib.StringPtr("/api/v1/servers/" + m.TestVHost + "/zones{/zone}"),
+					URL:        lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s", m.TestVHost)),
+					ConfigURL:  lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/config{/config_setting}", m.TestVHost)),
+					ZonesURL:   lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/zones{/zone}", m.TestVHost)),
 				},
 			}
 			return httpmock.NewJsonResponse(http.StatusOK, serversMock)
@@ -42,9 +58,9 @@ func (m *Mock) RegisterServersMockResponders() {
 				ID:         lib.StringPtr(m.TestVHost),
 				DaemonType: lib.StringPtr("authoritative"),
 				Version:    lib.StringPtr("4.1.2"),
-				URL:        lib.StringPtr("/api/v1/servers/" + m.TestVHost),
-				ConfigURL:  lib.StringPtr("/api/v1/servers/" + m.TestVHost + "/config{/config_setting}"),
-				ZonesURL:   lib.StringPtr("/api/v1/servers/" + m.TestVHost + "/zones{/zone}"),
+				URL:        lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s", m.TestVHost)),
+				ConfigURL:  lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/config{/config_setting}", m.TestVHost)),
+				ZonesURL:   lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/zones{/zone}", m.TestVHost)),
 			}
 			return httpmock.NewJsonResponse(http.StatusOK, serverMock)
 		},
@@ -53,7 +69,7 @@ func (m *Mock) RegisterServersMockResponders() {
 
 // RegisterCacheFlushMockResponder registers a cache flush mock responder
 func (m *Mock) RegisterCacheFlushMockResponder(testDomain string) {
-	httpmock.RegisterResponder("PUT", fmt.Sprintf("%s/cache/flush", m.generateTestAPIVHostURL()),
+	httpmock.RegisterResponder("PUT", m.generateTestAPIVHostCacheFlushURL(),
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {
 				return res, nil

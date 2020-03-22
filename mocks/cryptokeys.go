@@ -8,9 +8,17 @@ import (
 	"github.com/joeig/go-powerdns/v2/lib"
 )
 
+func (m *Mock) generateTestAPICryptokeysURL(testDomain string) string {
+	return fmt.Sprintf("%s/cryptokeys", m.generateTestAPIZoneURL(testDomain))
+}
+
+func (m *Mock) generateTestAPICryptokeyURL(testDomain string, id uint64) string {
+	return fmt.Sprintf("%s/%s", m.generateTestAPICryptokeysURL(testDomain), lib.CryptokeyIDToString(id))
+}
+
 // RegisterCryptokeysMockResponder registers a cryptokeys mock route
 func (m *Mock) RegisterCryptokeysMockResponder(testDomain string) {
-	httpmock.RegisterResponder("GET", m.generateTestAPIVHostURL()+"/zones/"+testDomain+"/cryptokeys",
+	httpmock.RegisterResponder("GET", m.generateTestAPICryptokeysURL(testDomain),
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {
 				return res, nil
@@ -48,7 +56,7 @@ func (m *Mock) RegisterCryptokeysMockResponder(testDomain string) {
 
 // RegisterCryptokeyMockResponders registers cryptokey mock routes
 func (m *Mock) RegisterCryptokeyMockResponders(testDomain string, id uint64) {
-	httpmock.RegisterResponder("GET", m.generateTestAPIVHostURL()+"/zones/"+testDomain+"/cryptokeys/"+lib.CryptokeyIDToString(id),
+	httpmock.RegisterResponder("GET", m.generateTestAPICryptokeyURL(testDomain, id),
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {
 				return res, nil
@@ -68,7 +76,7 @@ func (m *Mock) RegisterCryptokeyMockResponders(testDomain string, id uint64) {
 		},
 	)
 
-	httpmock.RegisterResponder("DELETE", fmt.Sprintf("%s/zones/%s/cryptokeys/%s", m.generateTestAPIVHostURL(), testDomain, lib.CryptokeyIDToString(id)),
+	httpmock.RegisterResponder("DELETE", m.generateTestAPICryptokeyURL(testDomain, id),
 		func(req *http.Request) (*http.Response, error) {
 			if req.Header.Get("X-Api-Key") == m.TestAPIKey {
 				return httpmock.NewStringResponse(http.StatusNoContent, ""), nil

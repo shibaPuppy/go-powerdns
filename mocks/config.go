@@ -1,15 +1,20 @@
 package mocks
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/jarcoal/httpmock"
 	"github.com/joeig/go-powerdns/v2/lib"
 )
 
+func (m *Mock) generateTestAPIConfigURL() string {
+	return fmt.Sprintf("%s/config", m.generateTestAPIVHostURL())
+}
+
 // RegisterConfigsMockResponder registers a config mock route
 func (m *Mock) RegisterConfigsMockResponder() {
-	httpmock.RegisterResponder("GET", m.generateTestAPIVHostURL()+"/config",
+	httpmock.RegisterResponder("GET", m.generateTestAPIConfigURL(),
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {
 				return res, nil

@@ -2,6 +2,7 @@ package mocks
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"regexp"
@@ -39,7 +40,7 @@ func validateCNAMEContent(content string) error {
 
 // RegisterRecordMockResponder registers a record mock responder
 func (m *Mock) RegisterRecordMockResponder(testDomain string) {
-	httpmock.RegisterResponder("PATCH", m.generateTestAPIVHostURL()+"/zones/"+testDomain,
+	httpmock.RegisterResponder("PATCH", m.generateTestAPIZoneURL(testDomain),
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {
 				return res, nil
@@ -79,7 +80,7 @@ func (m *Mock) RegisterRecordMockResponder(testDomain string) {
 
 			zoneMock := lib.Zone{
 				Name: lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
-				URL:  lib.StringPtr("/api/v1/servers/" + m.TestVHost + "/zones/" + lib.MakeDomainCanonical(testDomain)),
+				URL:  lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/zones/%s", m.TestVHost, lib.MakeDomainCanonical(testDomain))),
 			}
 			return httpmock.NewJsonResponse(http.StatusOK, zoneMock)
 		},

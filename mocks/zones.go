@@ -2,6 +2,7 @@ package mocks
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"regexp"
@@ -9,6 +10,22 @@ import (
 	"github.com/jarcoal/httpmock"
 	"github.com/joeig/go-powerdns/v2/lib"
 )
+
+func (m *Mock) generateTestAPIZonesURL() string {
+	return fmt.Sprintf("%s/zones", m.generateTestAPIVHostURL())
+}
+
+func (m *Mock) generateTestAPIZoneURL(testDomain string) string {
+	return fmt.Sprintf("%s/%s", m.generateTestAPIZonesURL(), testDomain)
+}
+
+func (m *Mock) generateTestAPIZoneNotifyURL(testDomain string) string {
+	return fmt.Sprintf("%s/notify", m.generateTestAPIZoneURL(testDomain))
+}
+
+func (m *Mock) generateTestAPIZoneExportURL(testDomain string) string {
+	return fmt.Sprintf("%s/export", m.generateTestAPIZoneURL(testDomain))
+}
 
 func validateZoneType(zoneType lib.ZoneType) error {
 	if zoneType != "Zone" {
@@ -29,7 +46,7 @@ func validateZoneKind(zoneKind lib.ZoneKind) error {
 
 // RegisterZonesMockResponder registers a zones mock responder
 func (m *Mock) RegisterZonesMockResponder() {
-	httpmock.RegisterResponder("GET", m.generateTestAPIVHostURL()+"/zones",
+	httpmock.RegisterResponder("GET", m.generateTestAPIZonesURL(),
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {
 				return res, nil
@@ -45,7 +62,7 @@ func (m *Mock) RegisterZonesMockResponder() {
 				{
 					ID:             lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
 					Name:           lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
-					URL:            lib.StringPtr("/api/v1/servers/" + m.TestVHost + "/zones/" + lib.MakeDomainCanonical(testDomain)),
+					URL:            lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/zones/%s", m.TestVHost, lib.MakeDomainCanonical(testDomain))),
 					Kind:           lib.ZoneKindPtr(lib.NativeZoneKind),
 					Serial:         lib.Uint32Ptr(1337),
 					NotifiedSerial: lib.Uint32Ptr(1337),
@@ -58,7 +75,7 @@ func (m *Mock) RegisterZonesMockResponder() {
 
 // RegisterZoneMockResponders registers zone mock responders
 func (m *Mock) RegisterZoneMockResponders(testDomain string, zoneKind lib.ZoneKind) {
-	httpmock.RegisterResponder("GET", m.generateTestAPIVHostURL()+"/zones/"+testDomain,
+	httpmock.RegisterResponder("GET", m.generateTestAPIZoneURL(testDomain),
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {
 				return res, nil
@@ -72,7 +89,7 @@ func (m *Mock) RegisterZoneMockResponders(testDomain string, zoneKind lib.ZoneKi
 			zoneMock := lib.Zone{
 				ID:   lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
 				Name: lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
-				URL:  lib.StringPtr("/api/v1/servers/" + m.TestVHost + "/zones/" + lib.MakeDomainCanonical(testDomain)),
+				URL:  lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/zones/%s", m.TestVHost, lib.MakeDomainCanonical(testDomain))),
 				Kind: lib.ZoneKindPtr(lib.NativeZoneKind),
 				RRsets: lib.RRsetSlicePtr([]lib.RRset{
 					{
@@ -93,7 +110,7 @@ func (m *Mock) RegisterZoneMockResponders(testDomain string, zoneKind lib.ZoneKi
 		},
 	)
 
-	httpmock.RegisterResponder("POST", m.generateTestAPIVHostURL()+"/zones",
+	httpmock.RegisterResponder("POST", m.generateTestAPIZonesURL(),
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {
 				return res, nil
@@ -127,7 +144,7 @@ func (m *Mock) RegisterZoneMockResponders(testDomain string, zoneKind lib.ZoneKi
 					ID:   lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
 					Name: lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
 					Type: lib.ZoneTypePtr(lib.ZoneZoneType),
-					URL:  lib.StringPtr("api/v1/servers/" + m.TestVHost + "/zones/" + lib.MakeDomainCanonical(testDomain)),
+					URL:  lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/zones/%s", m.TestVHost, lib.MakeDomainCanonical(testDomain))),
 					Kind: lib.ZoneKindPtr(zoneKind),
 					RRsets: lib.RRsetSlicePtr([]lib.RRset{
 						{
@@ -168,7 +185,7 @@ func (m *Mock) RegisterZoneMockResponders(testDomain string, zoneKind lib.ZoneKi
 					ID:          lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
 					Name:        lib.StringPtr(lib.MakeDomainCanonical(testDomain)),
 					Type:        lib.ZoneTypePtr(lib.ZoneZoneType),
-					URL:         lib.StringPtr("api/v1/servers/" + m.TestVHost + "/zones/" + lib.MakeDomainCanonical(testDomain)),
+					URL:         lib.StringPtr(fmt.Sprintf("/api/v1/servers/%s/zones/%s", m.TestVHost, lib.MakeDomainCanonical(testDomain))),
 					Kind:        lib.ZoneKindPtr(zoneKind),
 					Serial:      lib.Uint32Ptr(0),
 					Masters:     lib.StringSlicePtr([]string{"127.0.0.1"}),
@@ -188,7 +205,7 @@ func (m *Mock) RegisterZoneMockResponders(testDomain string, zoneKind lib.ZoneKi
 		},
 	)
 
-	httpmock.RegisterResponder("PUT", m.generateTestAPIVHostURL()+"/zones/"+testDomain,
+	httpmock.RegisterResponder("PUT", m.generateTestAPIZoneURL(testDomain),
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {
 				return res, nil
@@ -203,7 +220,7 @@ func (m *Mock) RegisterZoneMockResponders(testDomain string, zoneKind lib.ZoneKi
 		},
 	)
 
-	httpmock.RegisterResponder("DELETE", m.generateTestAPIVHostURL()+"/zones/"+testDomain,
+	httpmock.RegisterResponder("DELETE", m.generateTestAPIZoneURL(testDomain),
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {
 				return res, nil
@@ -218,7 +235,7 @@ func (m *Mock) RegisterZoneMockResponders(testDomain string, zoneKind lib.ZoneKi
 		},
 	)
 
-	httpmock.RegisterResponder("PUT", m.generateTestAPIVHostURL()+"/zones/"+testDomain+"/notify",
+	httpmock.RegisterResponder("PUT", m.generateTestAPIZoneNotifyURL(testDomain),
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {
 				return res, nil
@@ -233,7 +250,7 @@ func (m *Mock) RegisterZoneMockResponders(testDomain string, zoneKind lib.ZoneKi
 		},
 	)
 
-	httpmock.RegisterResponder("GET", m.generateTestAPIVHostURL()+"/zones/"+testDomain+"/export",
+	httpmock.RegisterResponder("GET", m.generateTestAPIZoneExportURL(testDomain),
 		func(req *http.Request) (*http.Response, error) {
 			if res := m.verifyAPIKey(req); res != nil {
 				return res, nil

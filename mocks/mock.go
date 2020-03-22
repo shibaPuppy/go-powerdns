@@ -1,7 +1,6 @@
 package mocks
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/jarcoal/httpmock"
@@ -27,14 +26,6 @@ func (m *Mock) DeactivateAndReset() {
 // Disabled returns true if the mock backend is disabled
 func (m *Mock) Disabled() bool {
 	return httpmock.Disabled()
-}
-
-func (m *Mock) generateTestAPIURL() string {
-	return fmt.Sprintf("%s/api/v1", m.TestBaseURL)
-}
-
-func (m *Mock) generateTestAPIVHostURL() string {
-	return fmt.Sprintf("%s/servers/%s", m.generateTestAPIURL(), m.TestVHost)
 }
 
 func (m *Mock) verifyAPIKey(req *http.Request) *http.Response {
