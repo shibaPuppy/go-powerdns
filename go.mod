@@ -1,4 +1,4 @@
-module github.com/joeig/go-powerdns/v2
+module github.com/shibaPuppy/go-powerdns/v2
 
 go 1.15
 
